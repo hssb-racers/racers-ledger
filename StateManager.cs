@@ -113,7 +113,7 @@ namespace RACErsLedger
                 sb.AppendFormat("{0}kg of ", Mass);
             }
             sb.Append(ObjectName);
-            sb.AppendFormat(" for ${0} with {1}", Value, SalvagedBy);
+            sb.AppendFormat(" worth ${0} via {1}", Value, SalvagedBy);
             return sb.ToString();
         }
     }
