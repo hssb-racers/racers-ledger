@@ -1,4 +1,5 @@
 ﻿using BBI.Unity.Game;
+using BepInEx.Logging;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
@@ -7,53 +8,48 @@ using Unity.Entities;
 namespace RACErsLedger.Patches
 {
     [HarmonyPatch]
-    class RACErsLedgerPatch1
+    class RACErsLedgerPatchAddHooks
     {
         [HarmonyTargetMethod]
         public static MethodBase TargetMethod()
         {
-            return typeof(SalvageableChangedEvent).GetMethod("ProcessObject", BindingFlags.Public | BindingFlags.Static);
+            return typeof(GameSession).GetMethod("Initialize", BindingFlags.Public | BindingFlags.Instance);
         }
 
         [HarmonyPrefix]
-        public static bool Prefix(
-      Entity salvagedEntity,
-      SalvageableSystem.ProcessedSalvageableInfo salvageableInfo,
-      float mass,
-      string name,
-      List<CategoryAsset> categories,
-      bool isSellOff,
-      SalvagedBy salvagedBy,
-      EntityCommandBuffer commandBuffer)
+        public static bool Postfix()
         {
-            Plugin.Log(BepInEx.Logging.LogLevel.Info, $"called: SalvageableChangedEvent.ProcessObject({salvagedEntity.ToString()}, {salvageableInfo.ToString()}, {mass.ToString()}, " +
-                $"{Main.Instance.LocalizationService.Localize(name, null)}, {categories.ToString()}, {isSellOff.ToString()}, {salvagedBy.ToString()}, {commandBuffer.ToString()})");
+            Plugin.Log(LogLevel.Info, "hello session");
+            Main.EventSystem.AddHandler<SalvageableChangedEvent>(new Carbon.Core.Events.EventHandler<SalvageableChangedEvent>(SalvageableChangedEventHandler));
+            Main.EventSystem.AddHandler<GameStateChangedEvent>(new Carbon.Core.Events.EventHandler<GameStateChangedEvent>(GameStateChangedEventHandler));
+
             return true;
+        }
+        public static void SalvageableChangedEventHandler(SalvageableChangedEvent ev)
+        {
+            Plugin.Log(LogLevel.Info, $"received SalvageableChangedEvent {{ state:{ev.State}, entity:{ev.SalvagedEntity}, SalvageableInfo:{{ SalvageableComponent:{ev.SalvageableInfo.SalvageableComponent}, MassAtTimeOfProcessing:{ev.SalvageableInfo.MassAtTimeOfProcessing}, ObjectName(Localized):{Main.Instance.LocalizationService.Localize(ev.SalvageableInfo.ObjectName, null)}, ObjectCategories:{ev.SalvageableInfo.ObjectCategories}, Rewards:{ev.SalvageableInfo.Rewards}, QualityWhenSalvaged:{ev.SalvageableInfo.QualityWhenSalvaged}, SalvagedBy:{ev.SalvageableInfo.SalvagedBy}}}, Mass:{ev.Mass}, ObjectName(Localized):{Main.Instance.LocalizationService.Localize(ev.ObjectName, null)}, Categories:{ev.Categories}, IsSellOff:{ev.IsSellOff}, Scrapped:{ev.Scrapped}, SalvagedBy:{ev.SalvagedBy}, CommandBuffer:{ev.CommandBuffer} }} ");
+        }
+        public static void GameStateChangedEventHandler(GameStateChangedEvent ev) {
+            Plugin.Log(LogLevel.Info, $"received GameStateChangedEvent {{ GameState:{ev.GameState}, PrevGameState:{ev.PrevGameState} }}");
         }
     }
 
     [HarmonyPatch]
-    class RACErsLedgerPatch2
+    class RACErsLedgerPatchRemoveHooks
     {
         [HarmonyTargetMethod]
         public static MethodBase TargetMethod()
         {
-            return typeof(SalvageableChangedEvent).GetMethod("DestroyObject", BindingFlags.Public | BindingFlags.Static);
+            return typeof(GameSession).GetMethod("Shutdown", BindingFlags.Public | BindingFlags.Instance);
         }
 
         [HarmonyPrefix]
-        public static bool Prefix(
-      Entity salvagedEntity,
-      SalvageableSystem.ProcessedSalvageableInfo salvageableInfo,
-      float mass,
-      string name,
-      List<CategoryAsset> categories,
-      bool scrapped,
-      SalvagedBy salvagedBy,
-      EntityCommandBuffer commandBuffer)
+        public static bool Postfix()
         {
-            Plugin.Log(BepInEx.Logging.LogLevel.Info, $"called: SalvageableChangedEvent.DestroyObject({salvagedEntity.ToString()}, {salvageableInfo.ToString()}, {mass.ToString()}, " +
-                "{Main.Instance.LocalizationService.Localize(name, null)}, {categories.ToString()}, {scrapped.ToString()}, {salvagedBy.ToString()}, {commandBuffer.ToString()})");
+            Plugin.Log(LogLevel.Info, "goodbye session");
+            Main.EventSystem.RemoveHandler<SalvageableChangedEvent>(new Carbon.Core.Events.EventHandler<SalvageableChangedEvent>(RACErsLedgerPatchAddHooks.SalvageableChangedEventHandler));
+            Main.EventSystem.RemoveHandler<GameStateChangedEvent>(new Carbon.Core.Events.EventHandler<GameStateChangedEvent>(RACErsLedgerPatchAddHooks.GameStateChangedEventHandler));
+
             return true;
         }
     }
