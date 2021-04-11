@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections;
-using System.Reflection;
-using BepInEx.Logging;
-using BBI.Unity.Game;
+﻿using BBI.Unity.Game;
 using HarmonyLib;
+using System.Collections.Generic;
+using System.Reflection;
 using Unity.Entities;
-using Unity.Collections;
 
-namespace racers_ledger.Patches
+namespace RacersLedger.Patches
 {
     [HarmonyPatch]
     class RACErsLedgerPatch1
@@ -33,7 +26,8 @@ namespace racers_ledger.Patches
       SalvagedBy salvagedBy,
       EntityCommandBuffer commandBuffer)
         {
-            Plugin.Log(BepInEx.Logging.LogLevel.Info, $"called: SalvageableChangedEvent.ProcessObject({salvagedEntity.ToString()}, {salvageableInfo.ToString()}, {mass.ToString()}, {Main.Instance.LocalizationService.Localize(name, null)}, {categories.ToString()}, {isSellOff.ToString()}, {salvagedBy.ToString()}, {commandBuffer.ToString()})");
+            Plugin.Log(BepInEx.Logging.LogLevel.Info, $"called: SalvageableChangedEvent.ProcessObject({salvagedEntity.ToString()}, {salvageableInfo.ToString()}, {mass.ToString()}, " +
+                $"{Main.Instance.LocalizationService.Localize(name, null)}, {categories.ToString()}, {isSellOff.ToString()}, {salvagedBy.ToString()}, {commandBuffer.ToString()})");
             return true;
         }
     }
@@ -58,7 +52,8 @@ namespace racers_ledger.Patches
       SalvagedBy salvagedBy,
       EntityCommandBuffer commandBuffer)
         {
-            Plugin.Log(BepInEx.Logging.LogLevel.Info, $"called: SalvageableChangedEvent.DestroyObject({salvagedEntity.ToString()}, {salvageableInfo.ToString()}, {mass.ToString()}, {Main.Instance.LocalizationService.Localize(name, null)}, {categories.ToString()}, {scrapped.ToString()}, {salvagedBy.ToString()}, {commandBuffer.ToString()})");
+            Plugin.Log(BepInEx.Logging.LogLevel.Info, $"called: SalvageableChangedEvent.DestroyObject({salvagedEntity.ToString()}, {salvageableInfo.ToString()}, {mass.ToString()}, " +
+                "{Main.Instance.LocalizationService.Localize(name, null)}, {categories.ToString()}, {scrapped.ToString()}, {salvagedBy.ToString()}, {commandBuffer.ToString()})");
             return true;
         }
     }

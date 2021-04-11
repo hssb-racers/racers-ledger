@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BepInEx;
+﻿using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 
 
-namespace racers_ledger
+namespace RacersLedger
 {
     [BepInPlugin(UUID, "RACErs Ledger", "0.0.0.1")]
     [BepInProcess("Shipbreaker.exe")]
@@ -25,7 +20,7 @@ namespace racers_ledger
 
             var harmony = new Harmony(UUID);
             harmony.PatchAll();
-           Log(LogLevel.Info, "RACErs Ledger patched!");
+            Log(LogLevel.Info, "RACErs Ledger patched!");
 
             foreach (var patchedMethod in harmony.GetPatchedMethods())
             {
@@ -37,7 +32,7 @@ namespace racers_ledger
         public static void Log(LogLevel level, string msg)
         {
             logSource.Log(level, msg);
-    }
+        }
     }
 }
 
