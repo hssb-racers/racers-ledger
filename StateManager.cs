@@ -105,6 +105,7 @@ namespace RACErsLedger
         }
         public new string ToString()
         {
+            // TODO(sariya) add categories here... at some point probably
             StringBuilder sb = new StringBuilder();
             sb.AppendFormat("{0} ({1:O}) ", GameTime, SystemTime);
             sb.Append(Destroyed ? "Destroyed: " : "Salvaged: ");
