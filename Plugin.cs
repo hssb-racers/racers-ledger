@@ -11,9 +11,11 @@ namespace RACErsLedger
     {
         private const string UUID = "dev.sariya.racersledger";
         private static ManualLogSource logSource;
+        public static StateManager StateManager { get; private set; }
 
         public void Awake()
         {
+            StateManager = new StateManager();
             logSource = Logger;
 
             Log(LogLevel.Info, "RACErs Ledger loaded.");
