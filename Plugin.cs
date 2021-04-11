@@ -3,7 +3,7 @@ using BepInEx.Logging;
 using HarmonyLib;
 
 
-namespace RacersLedger
+namespace RACErsLedger
 {
     [BepInPlugin(UUID, "RACErs Ledger", "0.0.0.1")]
     [BepInProcess("Shipbreaker.exe")]

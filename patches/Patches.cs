@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Unity.Entities;
 
-namespace RacersLedger.Patches
+namespace RACErsLedger.Patches
 {
     [HarmonyPatch]
     class RACErsLedgerPatch1

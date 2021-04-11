@@ -14,7 +14,7 @@ This mod (click on the Releases tab and download the dll file)
 
 Extract BepInEx to the root Hardspace Shipbreaker folder so `winhttp.dll` is in the same folder as `Shipbreaker.exe`.
 
-Extract this mod so `racers-ledger.dll` is placed like this: `Hardspace Shipbreaker\BepInEx\plugins\racers-ledger.dll`.
+Extract this mod so `racers-ledger.dll` is placed like this: `Hardspace Shipbreaker\BepInEx\plugins\RACErsLedger.dll`.
 
 ## (temporary) Viewing the BepinEx console to see salvage logs while file/stream output isn't implemented
 
@@ -26,9 +26,9 @@ Next time you run `Shipbreaker.exe` (directly or through steam), a console windo
 
 ## Un-installation
 
-BepInEx uses `winhttp.dll` as an injector/loader. Renaming or deleting this file is enough to disable both my mod and the loader.
+BepInEx uses `winhttp.dll` as an injector/loader. Renaming or deleting this file is enough to disable both this mod and the loader.
 
-Or just remove `racers-ledger.dll` from the plugins folder.
+Or just remove `RACErsLedger.dll` from the plugins folder.
 
 ## Support
 
