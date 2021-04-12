@@ -1,6 +1,16 @@
 ﻿# RACErs Ledger
 
-RACErs Ledger -- a mod for Hardspace: Shipbreaker to save salvage data in real time to enable visualization and analysis of salvaging strategies! 
+RACErs Ledger -- a mod for Hardspace: Shipbreaker to save salvage data in real time to enable visualization and analysis of salvaging strategies!
+
+Right now it can:
+ - Save shift summaries (time started, ended, duration, value you salvaged, value you destroyed, probably more in the future!) after every shift!
+ - Save salvage ledgers (lists of everything you salvaged and destroyed) after every shift!
+
+ In the future it will be able to:
+  - Do magic
+  - Read minds
+  - Shit gold and spawn butterflies
+  - Probably other things if you suggest them!
 
 ## Requirements
 
@@ -16,7 +26,7 @@ Extract BepInEx to the root Hardspace Shipbreaker folder so `winhttp.dll` is in 
 
 Extract this mod so `RACErsLedger.dll` is placed like this: `Hardspace Shipbreaker\BepInEx\plugins\RACErsLedger.dll`.
 
-## (temporary) Viewing the BepinEx console to see salvage logs while file/stream output isn't implemented
+## Viewing the BepinEx console to see logging info in realtime, if you're into that
 
 After following Installation instructions (above), run `Shipbreaker.exe` once. You can close it after you get to the main menu.
 
