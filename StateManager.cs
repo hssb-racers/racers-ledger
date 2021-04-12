@@ -10,18 +10,12 @@ namespace RACErsLedger
     public class StateManager
     {
         public List<ShiftLog> ShiftLogs { get; }
-        public ShiftLog CurrentShift
-        {
-            get
-            {
-                return ShiftLogs.Last();
-            }
-        }
-        private readonly string DataFolder;
+        public ShiftLog CurrentShift => ShiftLogs.Last();
+        private readonly string _dataFolder;
         public StateManager(string dataFolder)
         {
             ShiftLogs = new List<ShiftLog>();
-            DataFolder = dataFolder;
+            _dataFolder = dataFolder;
         }
 
         public ShiftLog StartShift()
@@ -50,8 +44,8 @@ namespace RACErsLedger
                 Plugin.Log(LogLevel.Info, $"writing summary and ledger to {shiftSummaryFileName} and {shiftLedgerFilename}...");
                 // does this need a try/catch for IO stuff???
                 // maybe these methods should be inherently async???
-                shift.WriteShiftSummary(Path.Combine(DataFolder, shiftSummaryFileName));
-                shift.WriteSalvageLedger(Path.Combine(DataFolder, shiftLedgerFilename));
+                shift.WriteShiftSummary(Path.Combine(_dataFolder, shiftSummaryFileName));
+                shift.WriteSalvageLedger(Path.Combine(_dataFolder, shiftLedgerFilename));
                 Plugin.Log(LogLevel.Info, "writing summary and ledger successful!");
             }
             catch (Exception e) { Plugin.Log(LogLevel.Error, e.ToString()); }
@@ -74,9 +68,9 @@ namespace RACErsLedger
             ShiftStartedTime = DateTime.Now;
             SalvageLogEntries = new List<ShiftSalvageLogEntry>();
         }
-        public void SetRACEInfo(int seed, int version, string startDateUTC, int MaxTotalValue, int MaxSalvageMass)
+        public void SetRACEInfo(int seed, int version, string startDateUTC, int maxTotalValue, int maxSalvageMass)
         {
-            RaceInfo = new RACEInfo(seed, version, startDateUTC, MaxTotalValue, MaxSalvageMass);
+            RaceInfo = new RACEInfo(seed, version, startDateUTC, maxTotalValue, maxSalvageMass);
         }
         public DateTime EndShift()
         {
@@ -129,8 +123,8 @@ namespace RACErsLedger
                     sw.WriteLine($"Seed: {RaceInfo.Seed}");
                     sw.WriteLine($"Version: {RaceInfo.Version} (probably week {RaceInfo.Version + 1})");
                     sw.WriteLine($"Start date: {RaceInfo.StartDateUTC}");
-                    sw.WriteLine($"Maximum possible salvage: ${RaceInfo.MaxTotalValue.ToString("N")}");
-                    sw.WriteLine($"Total mass: {RaceInfo.MaxSalvageMass.ToString("N")}kg");
+                    sw.WriteLine($"Maximum possible salvage: ${RaceInfo.MaxTotalValue:N}");
+                    sw.WriteLine($"Total mass: {RaceInfo.MaxSalvageMass:N}kg");
                 }
             }
         }
@@ -138,25 +132,25 @@ namespace RACErsLedger
     public class ShiftSalvageLogEntry
     {
         // Localized object name
-        public string ObjectName { get; private set; }
+        public string ObjectName { get; }
         // Mass reported at salvage time
-        public float Mass { get; private set; }
+        public float Mass { get; }
         // Categories HSSB thinks this object is in
-        public string[] Categories { get; private set; }
+        public string[] Categories { get; }
         // What salvaged this? (i.e. Furnace, Processor, PickUp, etc.)
         // Should SalvagedBy be an enum? Maybe, but also maybe managing the integrity of what we put in this field
         // should be up to the patches?? 
-        public string SalvagedBy { get; private set; }
+        public string SalvagedBy { get; }
         // How much the object was worth
-        public float Value { get; private set; }
+        public float Value { get; }
         // Is the value of the object determined on the mass?
-        public bool MassBasedValue { get; private set; }
+        public bool MassBasedValue { get; }
         // If Destroyed is true, then we did NOT get the Value out of this, and it is probably Scrapped now.
-        public bool Destroyed { get; private set; }
+        public bool Destroyed { get; }
         // Seconds into the shift this object was salvaged
-        public float GameTime { get; private set; }
+        public float GameTime { get; }
         // System time when object was salvaged
-        public DateTime SystemTime { get; private set; }
+        public DateTime SystemTime { get; }
 
         public ShiftSalvageLogEntry(string objectName, float mass, string[] categories, string salvagedBy, float value, bool massBasedValue, bool destroyed, float gameTime, DateTime systemTime)
         {

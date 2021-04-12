@@ -3,7 +3,7 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using System.IO;
-
+using JetBrains.Annotations;
 
 
 namespace RACErsLedger
@@ -13,13 +13,14 @@ namespace RACErsLedger
     public class Plugin : BaseUnityPlugin
     {
         private const string UUID = "dev.sariya.racersledger";
-        private static ManualLogSource logSource;
+        private static ManualLogSource _logSource;
         public static StateManager StateManager { get; private set; }
         public static ConfigEntry<string> ConfigDataFolder { get; private set; }
 
+        [UsedImplicitly]
         public void Awake()
         {
-            logSource = Logger;
+            _logSource = Logger;
             ConfigDataFolder = Config.Bind(
                 "RACErsLedger",
                 "DataFolder",
@@ -51,7 +52,7 @@ namespace RACErsLedger
         }
         public static void Log(LogLevel level, string msg)
         {
-            logSource.Log(level, msg);
+            _logSource.Log(level, msg);
         }
     }
 }

@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Unity.Entities;
 
 namespace RACErsLedger.Patches
@@ -13,25 +14,21 @@ namespace RACErsLedger.Patches
     class RACErsLedgerPatchAddHooks
     {
         [HarmonyTargetMethod]
+        [UsedImplicitly]
         public static MethodBase TargetMethod()
         {
             return typeof(GameSession).GetMethod("Initialize", BindingFlags.Public | BindingFlags.Instance);
         }
 
         [HarmonyPrefix]
+        [UsedImplicitly]
         public static bool Postfix()
         {
             try
             {
                 Plugin.Log(LogLevel.Info, "hello session");
-                Main.EventSystem.AddHandler<SalvageableChangedEvent>(new Carbon.Core.Events.EventHandler<SalvageableChangedEvent>(SalvageableChangedEventHandler));
-                Main.EventSystem.AddHandler<GameStateChangedEvent>(new Carbon.Core.Events.EventHandler<GameStateChangedEvent>(GameStateChangedEventHandler));
-                /*
-                 * the struggle, WeeklyShipController is marked internal! i just want to hook into LoadWeeklyShipLevel to snag that sweet sweet WeeklyShipResult :slight_smile: I wanna store the seed and id of RACE stuff along with salvage logs for later referencing~
-                 * i'll find my way in one way or another...
-                 * push comes to shove, whenever i make a new shift, it wouldn't be terribly hard to check the gamemode, and LynxOnlineService.Instance.WeeklyShip.FetchWeeklyShip to grab it
-                 */
-
+                Main.EventSystem.AddHandler(new Carbon.Core.Events.EventHandler<SalvageableChangedEvent>(SalvageableChangedEventHandler));
+                Main.EventSystem.AddHandler(new Carbon.Core.Events.EventHandler<GameStateChangedEvent>(GameStateChangedEventHandler));
             }
             catch (Exception e) { Plugin.Log(LogLevel.Error, e.ToString()); }
             return true;
@@ -111,17 +108,19 @@ namespace RACErsLedger.Patches
     class RACErsLedgerPatchRemoveHooks
     {
         [HarmonyTargetMethod]
+        [UsedImplicitly]
         public static MethodBase TargetMethod()
         {
             return typeof(GameSession).GetMethod("Shutdown", BindingFlags.Public | BindingFlags.Instance);
         }
 
         [HarmonyPrefix]
+        [UsedImplicitly]
         public static bool Postfix()
         {
             Plugin.Log(LogLevel.Info, "goodbye session");
-            Main.EventSystem.RemoveHandler<SalvageableChangedEvent>(new Carbon.Core.Events.EventHandler<SalvageableChangedEvent>(RACErsLedgerPatchAddHooks.SalvageableChangedEventHandler));
-            Main.EventSystem.RemoveHandler<GameStateChangedEvent>(new Carbon.Core.Events.EventHandler<GameStateChangedEvent>(RACErsLedgerPatchAddHooks.GameStateChangedEventHandler));
+            Main.EventSystem.RemoveHandler(new Carbon.Core.Events.EventHandler<SalvageableChangedEvent>(RACErsLedgerPatchAddHooks.SalvageableChangedEventHandler));
+            Main.EventSystem.RemoveHandler(new Carbon.Core.Events.EventHandler<GameStateChangedEvent>(RACErsLedgerPatchAddHooks.GameStateChangedEventHandler));
 
             return true;
         }
