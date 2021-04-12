@@ -24,6 +24,15 @@ After this, navigate to `Hardspace Shipbreaker\BepinEx\config\` and edit `BepinE
 
 Next time you run `Shipbreaker.exe` (directly or through steam), a console window should pop up too. If it didn't, I dunno, ping me on Discord and I can try to help debug or something.
 
+## Mod configuration
+The mod's config file will be in `Hardspace Shipbreaker\BepInEx\config\dev.sariya.racersledger.cfg` after you've run `Shipbreaker.exe` with `RACErsLedger.dll` installed properly at least once. 
+
+Config options:
+
+|      key     |                                              description                                             | default                             |
+|:------------:|:----------------------------------------------------------------------------------------------------:|-------------------------------------|
+| `DataFolder` | Where to store the CSVs of your salvage summaries ~or whatever other bullshit i decide to put there~ | `HardspaceShipbreaker\RACErsLedger` |
+
 ## Un-installation
 
 BepInEx uses `winhttp.dll` as an injector/loader. Renaming or deleting this file is enough to disable both this mod and the loader.

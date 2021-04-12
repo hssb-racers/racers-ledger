@@ -1,6 +1,9 @@
 ﻿using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
+using System.IO;
+
 
 
 namespace RACErsLedger
@@ -12,13 +15,28 @@ namespace RACErsLedger
         private const string UUID = "dev.sariya.racersledger";
         private static ManualLogSource logSource;
         public static StateManager StateManager { get; private set; }
+        public static ConfigEntry<string> ConfigDataFolder { get; private set; }
 
         public void Awake()
         {
-            StateManager = new StateManager();
             logSource = Logger;
+            ConfigDataFolder = Config.Bind(
+                "RACErsLedger",
+                "DataFolder",
+                Path.Combine(Paths.GameRootPath, "RACErsLedger"),
+                "Folder to save shift ledger data to. Will be created if it doesn't exist."
+                );
 
             Log(LogLevel.Info, "RACErs Ledger loaded.");
+
+            if (!Directory.Exists(ConfigDataFolder.Value))
+            {
+                Log(LogLevel.Info, $"DataFolder {ConfigDataFolder.Value} doesn't appear to exist, attempting to create...");
+                Directory.CreateDirectory(ConfigDataFolder.Value);
+                Log(LogLevel.Info, $"Succeeded creating {ConfigDataFolder.Value}!");
+            }
+
+            StateManager = new StateManager(ConfigDataFolder.Value);
 
             var harmony = new Harmony(UUID);
             harmony.PatchAll();
