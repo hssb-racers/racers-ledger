@@ -68,6 +68,7 @@ namespace RACErsLedger
 
         public float TotalValueSalvaged => SalvageLogEntries.Where(entry => !entry.Destroyed).Sum(entry => entry.Value);
         public float TotalValueDestroyed => SalvageLogEntries.Where(entry => entry.Destroyed).Sum(entry => entry.Value);
+        // TODO(sariya) add TotalMassSalvaged / TotalMassDestroyed? or more fun stuff with linq like everything destroyed by furnace/salvage so you can see what all you're sacrificing to the ~~wrong hole~~furnace gods?
         public ShiftLog()
         {
             ShiftStartedTime = DateTime.Now;
