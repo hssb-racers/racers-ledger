@@ -18,7 +18,7 @@ Hardspace Shipbreaker.
 
 BepInEx: https://github.com/BepInEx/BepInEx (You want the x64 version.)
 
-This mod (click on the Releases tab and download the dll file)
+This mod (click [here on the Releases tab](https://git.sariya.dev/sariya/racers-ledger/releases) and download the zipped dll file)
 
 ## Installation
 
