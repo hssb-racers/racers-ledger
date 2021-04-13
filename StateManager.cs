@@ -89,6 +89,13 @@ namespace RACErsLedger
         //               honestly, not sure what the right thing to do with C# design there is.
         public void AddSalvage(string objectName, float mass, string[] categories, string salvagedBy, float value, bool massBasedValue, bool destroyed, float gameTime, DateTime systemTime)
         {
+            // DIRTY HACK ALERT! I hate this but it fixes a bug. let's do it better honestly??
+            // if the shift is over, no more adding stuff!
+            if (ShiftEndedTime != DateTime.MinValue)
+            {
+                Plugin.Log(LogLevel.Warning, "Tried to add salvage after shift ended! bug sariya to make this better!");
+                return;
+            }
             SalvageLogEntries.Add(new ShiftSalvageLogEntry(objectName, mass, categories, salvagedBy, value, massBasedValue, destroyed, gameTime, systemTime));
         }
 
@@ -112,8 +119,8 @@ namespace RACErsLedger
                 sw.WriteLine($"Started: {ShiftStartedTime}");
                 sw.WriteLine($"Ended: {ShiftEndedTime}");
                 sw.WriteLine($"Duration: {ShiftEndedTime - ShiftStartedTime}");
-                sw.WriteLine($"Total value salvaged: {TotalValueSalvaged}");
-                sw.WriteLine($"Total value destroyed: {TotalValueDestroyed}");
+                sw.WriteLine($"Total value salvaged: {TotalValueSalvaged:N3}");
+                sw.WriteLine($"Total value destroyed: {TotalValueDestroyed:N3}");
                 sw.WriteLine($"RACE?: {RaceInfo != null}");
                 if (RaceInfo != null)
                 {
@@ -125,6 +132,13 @@ namespace RACErsLedger
                     sw.WriteLine($"Start date: {RaceInfo.StartDateUTC}");
                     sw.WriteLine($"Maximum possible salvage: ${RaceInfo.MaxTotalValue:N}");
                     sw.WriteLine($"Total mass: {RaceInfo.MaxSalvageMass:N}kg");
+                }
+                sw.WriteLine("--------------------------------------");
+                sw.WriteLine("Top 5 most valuable destroyed objects:");
+                foreach (var salvage in SalvageLogEntries.FindAll((entry => entry.Destroyed))
+                    .OrderByDescending(entry => entry.Value).Take(5))
+                {
+                    sw.WriteLine(salvage.ToString());
                 }
             }
         }
