@@ -22,9 +22,28 @@ This mod (click [here on the Releases tab](https://git.sariya.dev/sariya/racers-
 
 ## Installation
 
+# Windows
+
 Extract BepInEx to the root Hardspace Shipbreaker folder so `winhttp.dll` is in the same folder as `Shipbreaker.exe`.
 
 Extract this mod so `RACErsLedger.dll` is placed like this: `Hardspace Shipbreaker\BepInEx\plugins\RACErsLedger.dll`.
+
+# Linux
+
+Follow the Windows instructions. Afterwards you need to enable the DLL override.
+
+For this either follow [the official instructions of BepInEx](https://bepinex.github.io/bepinex_docs/master/articles/advanced/steam_interop.html?tabs=tabid-1#protonwine) or do it manually.
+
+In order to manually enable the override open `steamapps/compatdata/1161580/pfx/user.reg` in a text editor and go to section `[Software\\Wine\\DllOverrides]`.
+Add a line to it:
+
+```ini
+[Software\\Wine\\DllOverrides]
+…
+"winhttp"="native,builtin"
+```
+
+Afterwards you can start the game as regular.
 
 ## Viewing the BepinEx console to see logging info in realtime, if you're into that
 
