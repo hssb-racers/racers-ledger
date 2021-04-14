@@ -82,9 +82,12 @@ namespace RACErsCompanion
         }
         static IEnumerable<SalvageEntryData> ConvertToSalvageEntryData(IList<ShiftSalvageLogEntry> sequence)
         {
-            // the performance of this is absolute ass, since it's like O(nlogn) or something stupid like that. i'm sure i could do better with an imperative approach and saved
-            // sum variable but i could copypaste this off the internet so that was fun and easy
-            return sequence.Select((item, i) => new SalvageEntryData(sequence.Take(i + 1).Sum(entry => entry.Value), item.GameTime));
+            float cumulative = 0;
+            return sequence.Select((item, i) =>
+            {
+                cumulative += item.Value;
+                return new SalvageEntryData(cumulative, item.GameTime);
+            });
         }
     }
 
