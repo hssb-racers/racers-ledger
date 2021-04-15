@@ -16,9 +16,9 @@ Right now it can:
 
 Hardspace Shipbreaker.
 
-BepInEx: https://github.com/BepInEx/BepInEx (You want the x64 version.)
+BepInEx: https://github.com/BepInEx/BepInEx/releases (You want the x64 .zip.)
 
-This mod (click [here on the Releases tab](https://git.sariya.dev/sariya/racers-ledger/releases) and download the zipped dll file)
+This mod (click [here or on the Releases tab](https://git.sariya.dev/sariya/racers-ledger/releases) and download the `.dll` file of the latest release)
 
 ## Installation
 
@@ -61,6 +61,11 @@ Config options:
 |      key     |                                              description                                             | default                             |
 |:------------:|:----------------------------------------------------------------------------------------------------:|-------------------------------------|
 | `DataFolder` | Where to store the CSVs of your salvage summaries ~or whatever other bullshit i decide to put there~ | `HardspaceShipbreaker\RACErsLedger` |
+
+## Updating
+
+To update to a new RACErs Ledger version, navigate to [the releases tab](https://git.sariya.dev/sariya/racers-ledger/releases), download the `.dll` from the latest release, and overwrite `RACErsLedger.dll` in your install location.
+If Hardspace: Shipbreaker is already running, you will need to close it to be able to overwrite the file.
 
 ## Un-installation
 
