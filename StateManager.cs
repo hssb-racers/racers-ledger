@@ -78,11 +78,6 @@ namespace RACErsLedger
             ShiftEndedTime = DateTime.Now;
             TimeSpan duration = ShiftEndedTime - ShiftStartedTime;
             Plugin.Log(LogLevel.Info, $"Shift summary (started {ShiftStartedTime:u}, ended {ShiftEndedTime:u}, duration {duration}, salvaged {TotalValueSalvaged}, destroyed {TotalValueDestroyed})");
-            foreach (var entry in SalvageLogEntries)
-            {
-                // Maybe this should be Debug once we log to files? This is fine for now though.
-                Plugin.Log(LogLevel.Info, entry.ToString());
-            }
             return ShiftEndedTime;
         }
         // TODO(sariya): how to design this API? it COULD just take the entire SalvageableChangedEvent and process that event here instead of doing it in the patched in handler?
@@ -96,7 +91,10 @@ namespace RACErsLedger
                 Plugin.Log(LogLevel.Warning, "Tried to add salvage after shift ended! bug sariya to make this better!");
                 return;
             }
-            SalvageLogEntries.Add(new ShiftSalvageLogEntry(objectName, mass, categories, salvagedBy, value, massBasedValue, destroyed, gameTime, systemTime));
+            ShiftSalvageLogEntry entry = new ShiftSalvageLogEntry(objectName, mass, categories, salvagedBy, value, massBasedValue, destroyed, gameTime, systemTime);
+            SalvageLogEntries.Add(entry);
+            // Maybe this should be Debug once we log to files? This is fine for now though.
+            Plugin.Log(LogLevel.Info, entry.ToString());
         }
 
         public void WriteSalvageLedger(string path)
