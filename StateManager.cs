@@ -47,6 +47,7 @@ namespace RACErsLedger
                 shift.WriteShiftSummary(Path.Combine(_dataFolder, shiftSummaryFileName));
                 shift.WriteSalvageLedger(Path.Combine(_dataFolder, shiftLedgerFilename));
                 Plugin.Log(LogLevel.Info, "writing summary and ledger successful!");
+                ShiftLogs.Remove(shift);
             }
             catch (Exception e) { Plugin.Log(LogLevel.Error, e.ToString()); }
 
@@ -74,7 +75,6 @@ namespace RACErsLedger
         }
         public DateTime EndShift()
         {
-            // TODO(sariya): do i want to throw some kind of a warning or info or whatever when you addsalvage and there's a shiftendedtime ....
             ShiftEndedTime = DateTime.Now;
             TimeSpan duration = ShiftEndedTime - ShiftStartedTime;
             Plugin.Log(LogLevel.Info, $"Shift summary (started {ShiftStartedTime:u}, ended {ShiftEndedTime:u}, duration {duration}, salvaged {TotalValueSalvaged}, destroyed {TotalValueDestroyed})");
