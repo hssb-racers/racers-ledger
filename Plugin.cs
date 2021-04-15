@@ -2,8 +2,8 @@
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
-using System.IO;
 using JetBrains.Annotations;
+using System.IO;
 
 
 namespace RACErsLedger

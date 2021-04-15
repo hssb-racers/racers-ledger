@@ -1,11 +1,11 @@
 ﻿using BBI.Unity.Game;
 using BepInEx.Logging;
 using HarmonyLib;
+using JetBrains.Annotations;
 using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Unity.Entities;
 
 namespace RACErsLedger.Patches

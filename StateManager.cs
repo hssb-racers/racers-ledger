@@ -146,25 +146,25 @@ namespace RACErsLedger
     public class ShiftSalvageLogEntry
     {
         // Localized object name
-        public string ObjectName { get; set;  }
+        public string ObjectName { get; set; }
         // Mass reported at salvage time
-        public float Mass { get; set;  }
+        public float Mass { get; set; }
         // Categories HSSB thinks this object is in
         public string[] Categories { get; set; }
         // What salvaged this? (i.e. Furnace, Processor, PickUp, etc.)
         // Should SalvagedBy be an enum? Maybe, but also maybe managing the integrity of what we put in this field
         // should be up to the patches?? 
-        public string SalvagedBy { get; set;  }
+        public string SalvagedBy { get; set; }
         // How much the object was worth
-        public float Value { get; set;  }
+        public float Value { get; set; }
         // Is the value of the object determined on the mass?
-        public bool MassBasedValue { get; set;  }
+        public bool MassBasedValue { get; set; }
         // If Destroyed is true, then we did NOT get the Value out of this, and it is probably Scrapped now.
-        public bool Destroyed { get; set;  }
+        public bool Destroyed { get; set; }
         // Seconds into the shift this object was salvaged
-        public float GameTime { get; set;  }
+        public float GameTime { get; set; }
         // System time when object was salvaged
-        public DateTime SystemTime { get; set;  }
+        public DateTime SystemTime { get; set; }
 
         public ShiftSalvageLogEntry()
         {
