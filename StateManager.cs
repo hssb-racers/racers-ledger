@@ -93,7 +93,6 @@ namespace RACErsLedger
             }
             ShiftSalvageLogEntry entry = new ShiftSalvageLogEntry(objectName, mass, categories, salvagedBy, value, massBasedValue, destroyed, gameTime, systemTime);
             SalvageLogEntries.Add(entry);
-            // Maybe this should be Debug once we log to files? This is fine for now though.
             Plugin.Log(LogLevel.Info, entry.ToString());
         }
 
