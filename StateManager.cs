@@ -24,13 +24,14 @@ namespace RACErsLedger
             ShiftLogs.Add(newShiftLog);
             return newShiftLog;
         }
-        public void EndShift()
+        public void EndShift(string ExitCause)
         {
             try
             {
                 Plugin.Log(LogLevel.Debug, "ending shift now...");
-                CurrentShift.EndShift();
+                CurrentShift.EndShift(ExitCause);
                 var shift = CurrentShift;
+
                 StringBuilder sb = new StringBuilder();
                 if (shift.RaceInfo != null)
                 {
@@ -60,6 +61,7 @@ namespace RACErsLedger
         public RACEInfo RaceInfo;
         public DateTime ShiftStartedTime;
         public DateTime ShiftEndedTime;
+        public string ExitCause;
 
         public float TotalValueSalvaged => SalvageLogEntries.Where(entry => !entry.Destroyed).Sum(entry => entry.Value);
         public float TotalValueDestroyed => SalvageLogEntries.Where(entry => entry.Destroyed).Sum(entry => entry.Value);
@@ -73,13 +75,15 @@ namespace RACErsLedger
         {
             RaceInfo = new RACEInfo(seed, version, startDateUTC, maxTotalValue, maxSalvageMass);
         }
-        public DateTime EndShift()
+        public DateTime EndShift(string ExitCause)
         {
+            this.ExitCause = ExitCause;
             ShiftEndedTime = DateTime.Now;
             TimeSpan duration = ShiftEndedTime - ShiftStartedTime;
             Plugin.Log(LogLevel.Info,
                 $"Shift summary (started {ShiftStartedTime:u}"
                 +$", ended {ShiftEndedTime:u}"
+                +$" using {ExitCause}"
                 +$", duration {duration}"
                 +$", salvaged {TotalValueSalvaged:C}"
                 +$", destroyed {TotalValueDestroyed:C})"
@@ -140,6 +144,7 @@ namespace RACErsLedger
             {
                 sw.WriteLine($"Started: {ShiftStartedTime}");
                 sw.WriteLine($"Ended: {ShiftEndedTime}");
+                sw.WriteLine($"EndedBy: {ExitCause}");
                 sw.WriteLine($"Duration: {ShiftEndedTime - ShiftStartedTime}");
                 sw.WriteLine($"Total value salvaged: {TotalValueSalvaged:C3}");
                 sw.WriteLine($"Total value destroyed: {TotalValueDestroyed:C3}");
