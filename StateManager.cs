@@ -81,8 +81,8 @@ namespace RACErsLedger
                 $"Shift summary (started {ShiftStartedTime:u}"
                 +$", ended {ShiftEndedTime:u}"
                 +$", duration {duration}"
-                +$", salvaged {TotalValueSalvaged}"
-                +$", destroyed {TotalValueDestroyed})"
+                +$", salvaged {TotalValueSalvaged:C}"
+                +$", destroyed {TotalValueDestroyed:C})"
             );
             return ShiftEndedTime;
         }
@@ -122,13 +122,13 @@ namespace RACErsLedger
                 {
                     sw.WriteLine(string.Join(",",new string[] {
                         $"{entry.ObjectName}",
-                        $"{entry.Mass}",
+                        $"{entry.Mass:F3}",
                         $"{string.Join(";", entry.Categories)}",
                         $"{entry.SalvagedBy}",
-                        $"{entry.Value}",
+                        $"{entry.Value:F2}",
                         $"{entry.MassBasedValue}",
                         $"{entry.Destroyed}",
-                        $"{entry.GameTime}",
+                        $"{entry.GameTime:F1}",
                         $"{((DateTimeOffset)entry.SystemTime.ToUniversalTime()).ToUnixTimeMilliseconds()}"
                     }));
                 }
@@ -141,8 +141,8 @@ namespace RACErsLedger
                 sw.WriteLine($"Started: {ShiftStartedTime}");
                 sw.WriteLine($"Ended: {ShiftEndedTime}");
                 sw.WriteLine($"Duration: {ShiftEndedTime - ShiftStartedTime}");
-                sw.WriteLine($"Total value salvaged: {TotalValueSalvaged:N3}");
-                sw.WriteLine($"Total value destroyed: {TotalValueDestroyed:N3}");
+                sw.WriteLine($"Total value salvaged: {TotalValueSalvaged:C3}");
+                sw.WriteLine($"Total value destroyed: {TotalValueDestroyed:C3}");
                 sw.WriteLine($"RACE?: {RaceInfo != null}");
                 if (RaceInfo != null)
                 {
@@ -152,7 +152,7 @@ namespace RACErsLedger
                     sw.WriteLine($"Seed: {RaceInfo.Seed}");
                     sw.WriteLine($"Version: {RaceInfo.Version} (probably week {RaceInfo.Version + 1})");
                     sw.WriteLine($"Start date: {RaceInfo.StartDateUTC}");
-                    sw.WriteLine($"Maximum possible salvage: ${RaceInfo.MaxTotalValue:N}");
+                    sw.WriteLine($"Maximum possible salvage: ${RaceInfo.MaxTotalValue:C}");
                     sw.WriteLine($"Total mass: {RaceInfo.MaxSalvageMass:N}kg");
                 }
                 sw.WriteLine("--------------------------------------");
@@ -212,10 +212,10 @@ namespace RACErsLedger
             sb.Append(Destroyed ? "Destroyed: " : "Salvaged: ");
             if (MassBasedValue)
             {
-                sb.AppendFormat("{0}kg of ", Mass);
+                sb.AppendFormat("{0:F3}kg of ", Mass);
             }
             sb.Append(ObjectName);
-            sb.AppendFormat(" worth ${0} via {1}", Value, SalvagedBy);
+            sb.AppendFormat(" worth {0:C} via {1}", Value, SalvagedBy);
             return sb.ToString();
         }
     }
