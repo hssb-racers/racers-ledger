@@ -77,7 +77,13 @@ namespace RACErsLedger
         {
             ShiftEndedTime = DateTime.Now;
             TimeSpan duration = ShiftEndedTime - ShiftStartedTime;
-            Plugin.Log(LogLevel.Info, $"Shift summary (started {ShiftStartedTime:u}, ended {ShiftEndedTime:u}, duration {duration}, salvaged {TotalValueSalvaged}, destroyed {TotalValueDestroyed})");
+            Plugin.Log(LogLevel.Info,
+                $"Shift summary (started {ShiftStartedTime:u}"
+                +$", ended {ShiftEndedTime:u}"
+                +$", duration {duration}"
+                +$", salvaged {TotalValueSalvaged}"
+                +$", destroyed {TotalValueDestroyed})"
+            );
             return ShiftEndedTime;
         }
         // TODO(sariya): how to design this API? it COULD just take the entire SalvageableChangedEvent and process that event here instead of doing it in the patched in handler?
@@ -100,12 +106,31 @@ namespace RACErsLedger
         {
             using (StreamWriter sw = new StreamWriter(path))
             {
-                string headerLine = "objectName,mass,categories,salvagedBy,value,massBasedValue,destroyed,gameTime,epochTimeMs";
+                string headerLine = string.Join(",",new string[]{
+                    "objectName",
+                    "mass",
+                    "categories",
+                    "salvagedBy",
+                    "value",
+                    "massBasedValue",
+                    "destroyed",
+                    "gameTime",
+                    "epochTimeMs"
+                });
                 sw.WriteLine(headerLine);
                 foreach (var entry in SalvageLogEntries)
                 {
-                    sw.WriteLine(
-                        $"{entry.ObjectName},{entry.Mass},{string.Join(";", entry.Categories)},{entry.SalvagedBy},{entry.Value},{entry.MassBasedValue},{entry.Destroyed},{entry.GameTime},{((DateTimeOffset)entry.SystemTime.ToUniversalTime()).ToUnixTimeMilliseconds()}");
+                    sw.WriteLine(string.Join(",",new string[] {
+                        $"{entry.ObjectName}",
+                        $"{entry.Mass}",
+                        $"{string.Join(";", entry.Categories)}",
+                        $"{entry.SalvagedBy}",
+                        $"{entry.Value}",
+                        $"{entry.MassBasedValue}",
+                        $"{entry.Destroyed}",
+                        $"{entry.GameTime}",
+                        $"{((DateTimeOffset)entry.SystemTime.ToUniversalTime()).ToUnixTimeMilliseconds()}"
+                    }));
                 }
             }
         }
