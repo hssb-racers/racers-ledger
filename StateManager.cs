@@ -83,7 +83,7 @@ namespace RACErsLedger
             Plugin.Log(LogLevel.Info,
                 $"Shift summary (started {ShiftStartedTime:u}"
                 +$", ended {ShiftEndedTime:u}"
-                +$" using {ExitCause}"
+                +$" via {ExitCause}"
                 +$", duration {duration}"
                 +$", salvaged {TotalValueSalvaged:C}"
                 +$", destroyed {TotalValueDestroyed:C})"

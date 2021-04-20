@@ -99,7 +99,7 @@ namespace RACErsLedger.Patches
                     switch (ev.GameState)
                     {
                         case GameSession.GameState.GameComplete:
-                            ExitCause = "choppa";
+                            ExitCause = "complete";
                             break;
                         case GameSession.GameState.None:
                             ExitCause = "abort";
