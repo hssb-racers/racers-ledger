@@ -105,12 +105,12 @@ namespace RACErsLedger.Patches
                             ExitCause = "abort";
                             break;
                         default:
-                            ExitCause = "unknown ("+ev.GameState+")";
+                            ExitCause = "unknown (" + ev.GameState + ")";
                             break;
                     }
 
                     // TODO(sariya): keep an eye out for any other state transitions that mean "over" that you weren't expecting -- especially what's timeout? i think there's always a GameComplete though. 
-                    Plugin.Log(LogLevel.Info, "looks like current shift is over, marking end time on shift asynchronously. Cause: "+ExitCause);
+                    Plugin.Log(LogLevel.Info, "looks like current shift is over, marking end time on shift asynchronously. Cause: " + ExitCause);
 
                     new Task(() => Plugin.StateManager.EndShift(ExitCause)).Start();
                 }

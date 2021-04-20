@@ -82,11 +82,11 @@ namespace RACErsLedger
             TimeSpan duration = ShiftEndedTime - ShiftStartedTime;
             Plugin.Log(LogLevel.Info,
                 $"Shift summary (started {ShiftStartedTime:u}"
-                +$", ended {ShiftEndedTime:u}"
-                +$" via {ExitCause}"
-                +$", duration {duration}"
-                +$", salvaged {TotalValueSalvaged:C}"
-                +$", destroyed {TotalValueDestroyed:C})"
+                + $", ended {ShiftEndedTime:u}"
+                + $" via {ExitCause}"
+                + $", duration {duration}"
+                + $", salvaged {TotalValueSalvaged:C}"
+                + $", destroyed {TotalValueDestroyed:C})"
             );
             return ShiftEndedTime;
         }
@@ -110,7 +110,7 @@ namespace RACErsLedger
         {
             using (StreamWriter sw = new StreamWriter(path))
             {
-                string headerLine = string.Join(",",new string[]{
+                string headerLine = string.Join(",", new string[]{
                     "objectName",
                     "mass",
                     "categories",
@@ -124,7 +124,7 @@ namespace RACErsLedger
                 sw.WriteLine(headerLine);
                 foreach (var entry in SalvageLogEntries)
                 {
-                    sw.WriteLine(string.Join(",",new string[] {
+                    sw.WriteLine(string.Join(",", new string[] {
                         $"{entry.ObjectName}",
                         $"{entry.Mass:F3}",
                         $"{string.Join(";", entry.Categories)}",
