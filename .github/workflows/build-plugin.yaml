@@ -13,6 +13,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      name: checkout main repository
+
+    - uses: actions/checkout@v2
+      name: checkout dependency DLLs
+      with:
+        ssh-key: '${{ secrets.DLLSSH }}'
+        repository: hssb-racers/dlls
+        path: DLLs
+
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
 
