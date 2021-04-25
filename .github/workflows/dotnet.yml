@@ -20,6 +20,7 @@ jobs:
       with:
         repository: hssb-racers/dlls
         path: DLLs
+        ref: main
 
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
