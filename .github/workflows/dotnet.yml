@@ -13,6 +13,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      name: checkout main repository
+
+    - uses: actions/checkout@v2
+      name: checkout dependency DLLs
+      with:
+        repository: https://github.com/hssb-racers/dlls.git
+        path: DLLs
+
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
 
