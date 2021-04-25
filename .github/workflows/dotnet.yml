@@ -18,7 +18,7 @@ jobs:
     - uses: actions/checkout@v2
       name: checkout dependency DLLs
       with:
-        repository: https://github.com/hssb-racers/dlls.git
+        repository: hssb-racers/dlls
         path: DLLs
 
     - name: Add msbuild to PATH
