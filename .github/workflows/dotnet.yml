@@ -18,10 +18,9 @@ jobs:
     - uses: actions/checkout@v2
       name: checkout dependency DLLs
       with:
-        token: '${{ github.token }}'
+        sshkey: '${{ secrets.DLLSSH }}'
         repository: hssb-racers/dlls
         path: DLLs
-        ref: main
 
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
