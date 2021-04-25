@@ -33,30 +33,38 @@
   <ItemGroup>
     <Reference Include="0Harmony">
       <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Hardspace Shipbreaker\BepInEx\core\0Harmony.dll</HintPath>
+      <HintPath Condition="Exists('DLLs')">DLLs\bepinex\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="AntiCheatToolKit, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" />
     <Reference Include="BBI.Unity.Core">
       <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Hardspace Shipbreaker\Shipbreaker_Data\Managed\BBI.Unity.Core.dll</HintPath>
+      <HintPath Condition="Exists('DLLs')">DLLs\hssb\BBI.Unity.Core.dll</HintPath>
     </Reference>
     <Reference Include="BBI.Unity.Game">
       <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Hardspace Shipbreaker\Shipbreaker_Data\Managed\BBI.Unity.Game.dll</HintPath>
+      <HintPath Condition="Exists('DLLs')">DLLs\hssb\BBI.Unity.Game.dll</HintPath>
     </Reference>
     <Reference Include="BBI.Unity.Game.Data">
       <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Hardspace Shipbreaker\Shipbreaker_Data\Managed\BBI.Unity.Game.Data.dll</HintPath>
+      <HintPath Condition="Exists('DLLs')">DLLs\hssb\BBI.Unity.Game.Data.dll</HintPath>
     </Reference>
     <Reference Include="BepInEx">
       <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Hardspace Shipbreaker\BepInEx\core\BepInEx.dll</HintPath>
+      <HintPath Condition="Exists('DLLs')">DLLs\bepinex\BepInEx.dll</HintPath>
     </Reference>
     <Reference Include="BepInEx.Harmony">
       <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Hardspace Shipbreaker\BepInEx\core\BepInEx.Harmony.dll</HintPath>
+      <HintPath Condition="Exists('DLLs')">DLLs\bepinex\BepInEx.Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Carbon.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Hardspace Shipbreaker\Shipbreaker_Data\Managed\Carbon.Core.dll</HintPath>
+      <HintPath Condition="Exists('DLLs')">DLLs\hssb\Carbon.Core.dll</HintPath>
     </Reference>
     <Reference Include="Carbon.Core.Unity, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Hardspace Shipbreaker\Shipbreaker_Data\Managed\Carbon.Core.Unity.dll</HintPath>
+      <HintPath Condition="Exists('DLLs')">DLLs\hssb\Carbon.Core.Unity.dll</HintPath>
     </Reference>
     <Reference Include="Carbon.Localization.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
@@ -73,12 +81,15 @@
     <Reference Include="System.Xml" />
     <Reference Include="Unity.Entities">
       <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Hardspace Shipbreaker\Shipbreaker_Data\Managed\Unity.Entities.dll</HintPath>
+      <HintPath Condition="Exists('DLLs')">DLLs\hssb\Unity.Entities.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
       <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Hardspace Shipbreaker\Shipbreaker_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath Condition="Exists('DLLs')">DLLs\hssb\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Hardspace Shipbreaker\Shipbreaker_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath Condition="Exists('DLLs')">DLLs\hssb\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
     <Reference Include="websocket-sharp, Version=1.0.2.59611, Culture=neutral, PublicKeyToken=5660b08a1845a91e, processorArchitecture=MSIL">
       <HintPath>packages\WebSocketSharp.1.0.3-rc11\lib\websocket-sharp.dll</HintPath>
