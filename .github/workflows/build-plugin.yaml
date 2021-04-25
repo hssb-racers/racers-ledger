@@ -1,10 +1,8 @@
 name: build plugin
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  - push
+  - pull_request
 
 jobs:
   build:
@@ -27,3 +25,17 @@ jobs:
 
     - name: Build
       run: msbuild
+
+    - name: Push DLL to Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/v')
+      with:
+        files: |
+          obj/Debug/RACErsLedger.dll
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - name: Push DLL to workflow artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        path: obj/Debug/RACErsLedger.dll
