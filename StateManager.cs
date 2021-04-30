@@ -146,8 +146,8 @@ namespace RACErsLedger
                 sw.WriteLine($"Ended: {ShiftEndedTime}");
                 sw.WriteLine($"EndedBy: {ExitCause}");
                 sw.WriteLine($"Duration: {ShiftEndedTime - ShiftStartedTime}");
-                sw.WriteLine($"Total value salvaged: {TotalValueSalvaged:C3}");
-                sw.WriteLine($"Total value destroyed: {TotalValueDestroyed:C3}");
+                sw.WriteLine($"Total value salvaged: ${TotalValueSalvaged:F3}");
+                sw.WriteLine($"Total value destroyed: ${TotalValueDestroyed:F3}");
                 sw.WriteLine($"RACE?: {RaceInfo != null}");
                 if (RaceInfo != null)
                 {
@@ -157,7 +157,7 @@ namespace RACErsLedger
                     sw.WriteLine($"Seed: {RaceInfo.Seed}");
                     sw.WriteLine($"Version: {RaceInfo.Version} (probably week {RaceInfo.Version + 1})");
                     sw.WriteLine($"Start date: {RaceInfo.StartDateUTC}");
-                    sw.WriteLine($"Maximum possible salvage: ${RaceInfo.MaxTotalValue:C}");
+                    sw.WriteLine($"Maximum possible salvage: ${RaceInfo.MaxTotalValue:F}");
                     sw.WriteLine($"Total mass: {RaceInfo.MaxSalvageMass:N}kg");
                 }
                 sw.WriteLine("--------------------------------------");
