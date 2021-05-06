@@ -43,38 +43,3 @@ pub enum SalvageEvent {
         max_salvage_mass: i64
     }
 }
-
-/* 
- [Serializable]
-    public class StartShiftEvent : LedgerEventBase
-    {
-
-    }
-
-    [Serializable]
-    public class EndShiftEvent : LedgerEventBase
-    {
-
-    }
-
-    [Serializable]
-    public class SetRACEInfoEvent : LedgerEventBase
-    {
-        // TODO(sariya): is there any reason we can't just have RACEInfo inherit from LedgerEventBase and use the same class for both things
-        // instead of duplicating code here?
-        public int Seed { get; }
-        public int Version { get; }
-        public string StartDateUTC { get; }
-        public int MaxTotalValue { get; }
-        public int MaxSalvageMass { get; }
-        public SetRACEInfoEvent(RACEInfo raceInfo)
-        {
-            Seed = raceInfo.Seed;
-            Version = raceInfo.Version;
-            StartDateUTC = raceInfo.StartDateUTC;
-            MaxTotalValue = raceInfo.MaxTotalValue;
-            MaxSalvageMass = raceInfo.MaxSalvageMass;
-
-        }
-    }
-    */
