@@ -1,9 +1,11 @@
 ﻿using BepInEx.Logging;
+using RACErsLedger.DataTypes;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+
 
 namespace RACErsLedger
 {
@@ -22,6 +24,10 @@ namespace RACErsLedger
         {
             var newShiftLog = new ShiftLog();
             ShiftLogs.Add(newShiftLog);
+
+            var @event = new StartShiftEvent();
+            Plugin.LampreyManager.SendEvent(@event);
+
             return newShiftLog;
         }
         public void EndShift(string ExitCause)
@@ -32,6 +38,9 @@ namespace RACErsLedger
                 CurrentShift.EndShift(ExitCause);
                 var shift = CurrentShift;
 
+                var @event = new EndShiftEvent();
+                Plugin.LampreyManager.SendEvent(@event);
+
                 StringBuilder sb = new StringBuilder();
                 if (shift.RaceInfo != null)
                 {
@@ -39,7 +48,6 @@ namespace RACErsLedger
                 }
                 sb.Append(shift.ShiftStartedTime.ToString("yyyyMMddTHHmmss"));
                 var shiftFilenameBase = sb.ToString();
-
                 var shiftSummaryFileName = shiftFilenameBase + "_summary.txt";
                 var shiftLedgerFilename = shiftFilenameBase + "_ledger.csv";
                 Plugin.Log(LogLevel.Info, $"writing summary and ledger to {shiftSummaryFileName} and {shiftLedgerFilename}...");
@@ -74,6 +82,11 @@ namespace RACErsLedger
         public void SetRACEInfo(int seed, int version, string startDateUTC, int maxTotalValue, int maxSalvageMass)
         {
             RaceInfo = new RACEInfo(seed, version, startDateUTC, maxTotalValue, maxSalvageMass);
+
+                var @event = new SetRACEInfoEvent(RaceInfo);
+                Plugin.LampreyManager.SendEvent(@event);
+
+
         }
         public DateTime EndShift(string ExitCause)
         {
@@ -103,6 +116,7 @@ namespace RACErsLedger
             }
             ShiftSalvageLogEntry entry = new ShiftSalvageLogEntry(objectName, mass, categories, salvagedBy, value, massBasedValue, destroyed, gameTime, systemTime);
             SalvageLogEntries.Add(entry);
+            Plugin.LampreyManager.SendEvent(entry);
             Plugin.Log(LogLevel.Info, entry.ToString());
         }
 
@@ -168,77 +182,6 @@ namespace RACErsLedger
                     sw.WriteLine(salvage.ToString());
                 }
             }
-        }
-    }
-    public class ShiftSalvageLogEntry
-    {
-        // Localized object name
-        public string ObjectName { get; set; }
-        // Mass reported at salvage time
-        public float Mass { get; set; }
-        // Categories HSSB thinks this object is in
-        public string[] Categories { get; set; }
-        // What salvaged this? (i.e. Furnace, Processor, PickUp, etc.)
-        // Should SalvagedBy be an enum? Maybe, but also maybe managing the integrity of what we put in this field
-        // should be up to the patches?? 
-        public string SalvagedBy { get; set; }
-        // How much the object was worth
-        public float Value { get; set; }
-        // Is the value of the object determined on the mass?
-        public bool MassBasedValue { get; set; }
-        // If Destroyed is true, then we did NOT get the Value out of this, and it is probably Scrapped now.
-        public bool Destroyed { get; set; }
-        // Seconds into the shift this object was salvaged
-        public float GameTime { get; set; }
-        // System time when object was salvaged
-        public DateTime SystemTime { get; set; }
-
-        public ShiftSalvageLogEntry()
-        {
-        }
-
-        public ShiftSalvageLogEntry(string objectName, float mass, string[] categories, string salvagedBy, float value, bool massBasedValue, bool destroyed, float gameTime, DateTime systemTime)
-        {
-            ObjectName = objectName;
-            Mass = mass;
-            Categories = categories;
-            SalvagedBy = salvagedBy;
-            Value = value;
-            MassBasedValue = massBasedValue;
-            Destroyed = destroyed;
-            GameTime = gameTime;
-            SystemTime = systemTime;
-        }
-        public new string ToString()
-        {
-            // TODO(sariya) add categories here... at some point probably
-            StringBuilder sb = new StringBuilder();
-            sb.AppendFormat("{0} ({1:O}) ", GameTime, SystemTime);
-            sb.Append(Destroyed ? "Destroyed: " : "Salvaged: ");
-            if (MassBasedValue)
-            {
-                sb.AppendFormat("{0:F3}kg of ", Mass);
-            }
-            sb.Append(ObjectName);
-            sb.AppendFormat(" worth {0:C} via {1}", Value, SalvagedBy);
-            return sb.ToString();
-        }
-    }
-    public class RACEInfo
-    {
-        public int Seed { get; }
-        public int Version { get; }
-        public string StartDateUTC { get; }
-        public int MaxTotalValue { get; }
-        public int MaxSalvageMass { get; }
-        public RACEInfo(int seed, int version, string startDateUTC, int maxTotalValue, int maxSalvageMass)
-        {
-            Seed = seed;
-            Version = version;
-            StartDateUTC = startDateUTC;
-            MaxTotalValue = maxTotalValue;
-            MaxSalvageMass = maxSalvageMass;
-
         }
     }
 }

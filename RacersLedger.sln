@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.31129.286
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RACErsLedger", "RACErsLedger.csproj", "{FA021831-7195-4C40-868B-2A1632BF221D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RACErsCompanion", "RACErsCompanion\RACErsCompanion.csproj", "{832DB465-2F82-42D1-8588-F93411BB9C83}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,10 +15,6 @@ Global
 		{FA021831-7195-4C40-868B-2A1632BF221D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FA021831-7195-4C40-868B-2A1632BF221D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FA021831-7195-4C40-868B-2A1632BF221D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{832DB465-2F82-42D1-8588-F93411BB9C83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{832DB465-2F82-42D1-8588-F93411BB9C83}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{832DB465-2F82-42D1-8588-F93411BB9C83}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{832DB465-2F82-42D1-8588-F93411BB9C83}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
