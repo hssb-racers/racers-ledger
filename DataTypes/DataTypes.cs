@@ -23,7 +23,15 @@ namespace RACErsLedger.DataTypes
         // It's just the type of the variant. For compatibility with serde.rs (also since I couldn't easily find ways to have a custom format for #[serde(tag="$type")] decoding.
         // without, using TypeNameHandling: "$type":"RACErsLedger.DataTypes.ShiftSalvageLogEntry, RACErsLedger"
         // with: "type":"ShiftSalvageLogEntry",
-        public string Type => GetType().Name;
+        public string Type
+        {
+            get
+            {
+                // convert titlecase to camelcase
+                var name  = GetType().Name;
+                return Char.ToLowerInvariant(name[0]) + name.Substring(1);
+            }
+        }
     }
 
 
