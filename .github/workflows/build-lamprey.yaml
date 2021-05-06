@@ -1,0 +1,93 @@
+on: [push, pull_request]
+
+name: build lamprey
+
+jobs:
+  build-linux:
+    name: Build for Linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --manifest-path RACErsLedgerLamprey/Cargo.toml
+      - name: extract built binary
+        uses: actions/upload-artifact@v2
+        with:
+          name: racers_ledger_lamprey-linux
+          path: RACErsLedgerLamprey/target/debug/racers_ledger_lamprey
+
+  build-windows:
+    name: Build for Windows
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          target: x86_64-pc-windows-gnu
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          command: build
+          args: --manifest-path RACErsLedgerLamprey/Cargo.toml --target x86_64-pc-windows-gnu
+      - name: extract built binary
+        uses: actions/upload-artifact@v2
+        with:
+          name: racers_ledger_lamprey-windows
+          path: RACErsLedgerLamprey/target/debug/racers_ledger_lamprey.exe
+
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --manifest-path RACErsLedgerLamprey/Cargo.toml
+
+  fmt:
+    name: Rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+      - run: rustup component add rustfmt
+      - uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --manifest-path RACErsLedgerLamprey/Cargo.toml --all -- --check
+
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+      - run: rustup component add clippy
+      - uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --manifest-path RACErsLedgerLamprey/Cargo.toml -- -D warnings
