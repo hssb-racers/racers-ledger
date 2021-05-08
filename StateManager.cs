@@ -83,8 +83,8 @@ namespace RACErsLedger
         {
             RaceInfo = new RACEInfo(seed, version, startDateUTC, maxTotalValue, maxSalvageMass);
 
-                var @event = new SetRACEInfoEvent(RaceInfo);
-                Plugin.LampreyManager.SendEvent(@event);
+            var @event = new SetRACEInfoEvent(RaceInfo);
+            Plugin.LampreyManager.SendEvent(@event);
 
 
         }

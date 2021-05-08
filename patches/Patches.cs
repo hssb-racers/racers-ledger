@@ -82,10 +82,10 @@ namespace RACErsLedger.Patches
                     if (GameSession.CurrentSessionType == GameSession.SessionType.WeeklyShip)
                     {
                         Plugin.Log(LogLevel.Debug, "looks like we're in RACE, let's grab some info about it");
-                        var raceInfo = LynxOnlineService.Instance.WeeklyShip.GetRecentWeeklyShip();
-                        Plugin.Log(LogLevel.Debug, $"id:{raceInfo.Id} seed:{raceInfo.Seed} difficulty:{raceInfo.Difficulty} objectiveGroup:{raceInfo.ObjectiveGroup} version:{raceInfo.Version} key:{raceInfo.Key} startDateUTC:{raceInfo.StartDateUTC} expiredDateUTC:{raceInfo.ExpiredDateUTC} maxPerformanceData:{{ MaxShiftLengthInSeconds:{raceInfo.MaxPerformanceData.MaxShiftLengthInSec}" +
-                            $" MaxObjective:{raceInfo.MaxPerformanceData.MaxObjective} MaxTotalValue:{raceInfo.MaxPerformanceData.MaxTotalValue} MaxSalvageMass:{raceInfo.MaxPerformanceData.MaxSalvageMass} }}");
-                        shift.SetRACEInfo(raceInfo.Seed, raceInfo.Version, raceInfo.StartDateUTC, raceInfo.MaxPerformanceData.MaxTotalValue, raceInfo.MaxPerformanceData.MaxSalvageMass);
+                        var raceInfoWSR = LynxOnlineService.Instance.WeeklyShip.GetRecentWeeklyShip();
+                        var shipPreview = LynxOnlineService.Instance.WeeklyShip.GetRecentWeeklyShipPreview();
+                        var maxSalvageableValue = PlaystreamService.Instance.GetShipValue(shipPreview);
+                        shift.SetRACEInfo(raceInfoWSR.Seed, raceInfoWSR.Version, raceInfoWSR.StartDateUTC, (int) maxSalvageableValue, (int) shipPreview.Mass);
                     }
                 }
                 if (

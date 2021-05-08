@@ -19,7 +19,7 @@ struct Opts {
     connect_port: i32,
     /// Port for lamprey to listen on for subclients (i.e. visualizers, other plugins, etc)
     listen_port: i32,
-    /// A level of verbosity, and can be used multiple times. DOES NOTHING CURRENTLY. Maybe it will some day!
+    /// A level of verbosity, and can be used multiple times.
     #[clap(short, long, parse(from_occurrences))]
     verbose: i32,
 }

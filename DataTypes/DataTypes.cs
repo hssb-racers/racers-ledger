@@ -28,7 +28,7 @@ namespace RACErsLedger.DataTypes
             get
             {
                 // convert titlecase to camelcase
-                var name  = GetType().Name;
+                var name = GetType().Name;
                 return Char.ToLowerInvariant(name[0]) + name.Substring(1);
             }
         }
