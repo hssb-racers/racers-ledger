@@ -82,10 +82,10 @@ namespace RACErsLedger.Patches
                     if (GameSession.CurrentSessionType == GameSession.SessionType.WeeklyShip)
                     {
                         Plugin.Log(LogLevel.Debug, "looks like we're in RACE, let's grab some info about it");
-                        var raceInfoWSR = LynxOnlineService.Instance.WeeklyShip.GetRecentWeeklyShip();
+                        var weeklyShipResult = LynxOnlineService.Instance.WeeklyShip.GetRecentWeeklyShip();
                         var shipPreview = LynxOnlineService.Instance.WeeklyShip.GetRecentWeeklyShipPreview();
                         var maxSalvageableValue = PlaystreamService.Instance.GetShipValue(shipPreview);
-                        shift.SetRACEInfo(raceInfoWSR.Seed, raceInfoWSR.Version, raceInfoWSR.StartDateUTC, (int) maxSalvageableValue, (int) shipPreview.Mass);
+                        shift.SetRACEInfo(weeklyShipResult.Seed, weeklyShipResult.Version, weeklyShipResult.StartDateUTC, (int) maxSalvageableValue, (int) shipPreview.Mass);
                     }
                 }
                 if (
