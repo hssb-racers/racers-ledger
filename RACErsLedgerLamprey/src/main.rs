@@ -2,11 +2,11 @@ mod datatypes;
 pub use crate::datatypes::*;
 
 use log::{debug, error, info, LevelFilter};
-use serde_json::{Result, Value};
+use serde_json::{Result};
 use simple_logger::SimpleLogger;
-use std::net::TcpListener;
-use std::thread::spawn;
-use tungstenite::{connect, server::accept, Message};
+//use std::net::TcpListener;
+//use std::thread::spawn;
+use tungstenite::{connect, Message};
 use url::Url;
 extern crate colored;
 
