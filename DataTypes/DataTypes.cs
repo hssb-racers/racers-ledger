@@ -38,18 +38,21 @@ namespace RACErsLedger.DataTypes
     [Serializable]
     public class StartShiftEvent : LedgerEventBase
     {
-
+        // TODO(sariya) INCLUDE SYSTEM TIME HERE FOR LINEARIZATION LATER
     }
 
     [Serializable]
     public class EndShiftEvent : LedgerEventBase
     {
+        // TODO(sariya) INCLUDE SYSTEM TIME HERE FOR LINEARIZATION LATER
 
     }
 
     [Serializable]
     public class SetRACEInfoEvent : LedgerEventBase
     {
+        // TODO(sariya) INCLUDE SYSTEM TIME HERE FOR LINEARIZATION LATER
+
         // TODO(sariya): is there any reason we can't just have RACEInfo inherit from LedgerEventBase and use the same class for both things
         // instead of duplicating code here?
         public int Seed { get; }
