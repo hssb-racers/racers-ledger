@@ -46,7 +46,7 @@ namespace RACErsLedger
 
         public LampreyManager(Int32 websocketListenPort, Int32 lampreyListenPort)
         {
-            
+            _websocketListenPort = websocketListenPort;
             _lampreyListenPort = lampreyListenPort;
         }
 
