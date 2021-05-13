@@ -8,6 +8,7 @@ use std::net::TcpListener;
 use std::thread::spawn;
 use tungstenite::{connect, server::accept, Message};
 use url::Url;
+use colored::Colorize;
 
 use clap::{AppSettings, Clap};
 
@@ -22,6 +23,8 @@ struct Opts {
     /// A level of verbosity, and can be used multiple times.
     #[clap(short, long, parse(from_occurrences))]
     verbose: i32,
+    #[clap(short, long)]
+    colorize: bool
 }
 
 fn main() {
@@ -35,6 +38,9 @@ fn main() {
         })
         .init()
         .unwrap();
+    if(opts.colorize) {
+        
+    }
     info!("starting up server");
     info!(
         "connect port: {}, listen port: {}",
@@ -55,7 +61,8 @@ fn main() {
                 let event: Result<SalvageEvent> = serde_json::from_str(string.as_str());
                 match event {
                     Ok(salvage_event) => {
-                        info!("decoded {:#?}", salvage_event)
+                        debug!("decoded {:#?}", salvage_event);
+                        println!("{}", salvage_event)
                     }
                     Err(e) => {
                         error!("{}", e)

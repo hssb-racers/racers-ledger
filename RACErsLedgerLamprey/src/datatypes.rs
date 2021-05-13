@@ -1,6 +1,8 @@
 // Datatypes used in RACErs Ledger Extended Universe. Should generally be kept in sync with racers-ledger/DataTypes/DataTypes.cs.
 use serde::{Deserialize, Serialize};
 use chrono::prelude::*;
+use std::fmt;
+use colored::Colorize;
 
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(rename_all = "camelCase", tag = "type")]
@@ -41,5 +43,33 @@ pub enum SalvageEvent {
         max_total_value: i64,
         // dev claimed salvage mass
         max_salvage_mass: i64
+    }
+}
+
+impl fmt::Display for SalvageEvent {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match &*self {
+            SalvageEvent::ShiftSalvageLogEntry{object_name, mass, categories, salvaged_by, value, mass_based_value, destroyed, game_time, system_time} => {
+                write!(f, "{} ({}) {}{}{} worth {} via {} (item categories: [{}])",
+                game_time, // TODO(sariya) consistent formatting (2 decimal places)
+                system_time, // TODO(sariya) second-level resolution (not nanosecond resolution)
+                if *destroyed {"Destroyed ".red().bold()} else {"Salvaged ".green().bold()},
+                if *mass_based_value {format!("{} kg of ", mass)} else {"".into()},
+                object_name,
+                value,
+                salvaged_by,
+                categories.join(",") // TODO(sariya) have some highlight override colors for these for common RACE categories???
+            )
+            },
+            SalvageEvent::StartShiftEvent => {
+                write!(f, "started new shift")
+            },
+            SalvageEvent::EndShiftEvent => {
+                write!(f, "ended shift")
+            },
+            SalvageEvent::SetRACEInfoEvent {seed, version, start_date_utc, max_total_value, max_salvage_mass} => {
+                write!(f, "current shift is a RACE: seed={} version={} start_date_utc={} max_total_value={} max_salvage_mass={}", seed, version, start_date_utc, max_total_value, max_salvage_mass)
+            }
+        }
     }
 }
