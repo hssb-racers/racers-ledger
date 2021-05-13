@@ -8,7 +8,7 @@ use std::net::TcpListener;
 use std::thread::spawn;
 use tungstenite::{connect, server::accept, Message};
 use url::Url;
-use colored::Colorize;
+use colored::{control, Colorize};
 
 use clap::{AppSettings, Clap};
 
@@ -23,8 +23,9 @@ struct Opts {
     /// A level of verbosity, and can be used multiple times.
     #[clap(short, long, parse(from_occurrences))]
     verbose: i32,
+    /// Disable colored output.
     #[clap(short, long)]
-    colorize: bool
+    nocolorize: bool
 }
 
 fn main() {
@@ -38,8 +39,8 @@ fn main() {
         })
         .init()
         .unwrap();
-    if(opts.colorize) {
-        
+    if opts.nocolorize {
+        colored::control::set_override(false);
     }
     info!("starting up server");
     info!(
