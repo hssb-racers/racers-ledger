@@ -32,7 +32,7 @@ namespace RACErsLedger
     public class LampreyManager
     {
         private readonly int _lampreyListenPort;
-        private int? _listenPort;
+        private readonly int _websocketListenPort;
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0044:Add readonly modifier", Justification = "implementation coming shortly")]
         private Process _lampreyProcess;
         [CanBeNull] private WebSocketServer _server;
@@ -44,16 +44,16 @@ namespace RACErsLedger
             },
         };
 
-        public LampreyManager(Int32 lampreyListenPort)
+        public LampreyManager(Int32 websocketListenPort, Int32 lampreyListenPort)
         {
+            
             _lampreyListenPort = lampreyListenPort;
         }
 
         internal void Start()
         {
             var rnd = new Random();
-            _listenPort = rnd.Next(49152, 65535);
-            _server = new WebSocketServer(IPAddress.Loopback, _listenPort.Value);
+            _server = new WebSocketServer(IPAddress.Loopback, _websocketListenPort);
             _server.AddWebSocketService<EventBroadcastServer>("/racers-ledger/");
             _server.Start();
             Plugin.Log(LogLevel.Message, $"listening on ws://127.0.0.1:{_server.Port}/racers-ledger/");
@@ -73,7 +73,6 @@ namespace RACErsLedger
             }
             // TODO(sariya) make rust process kill itself when it notices parent has died so it's safe if this isn't graceful
             _lampreyProcess.Close();
-            _listenPort = null;
             _server = null;
         }
 

@@ -18,6 +18,7 @@ namespace RACErsLedger
         public static ConfigEntry<string> ConfigDataFolder { get; private set; }
         public static ConfigEntry<bool> ConfigEnableLamprey { get; private set; }
         public static ConfigEntry<int> ConfigLampreyListenPort { get; private set; }
+        public static ConfigEntry<int> ConfigWebsocketListenPort { get; private set; }
         public static LampreyManager LampreyManager { get; private set; }
 
         [UsedImplicitly]
@@ -44,6 +45,13 @@ namespace RACErsLedger
                 // TODO(sariya) maybe we SHOULD do validation on this
                 "Only change this if you know what you're doing. What port does the lamprey process accept connections on? Must be between 1 and 65535, inclusive, and also follow the rest of the rules of ports. We don't do validation on this."
             );
+            ConfigWebsocketListenPort = Config.Bind(
+                "RACErsLedger",
+                "WebsocketListenPort",
+                32325,
+                // TODO(sariya) same as above
+                "Only change this if you know what you're doing. What port does the RACErsLedger mod listen for websocket connections on? Must be between 1 and 65535, inclusive, and also follow the rest of the rules of ports. We don't do validation on this."
+                );
 
             Log(LogLevel.Info, "RACErs Ledger loaded.");
 
@@ -55,7 +63,7 @@ namespace RACErsLedger
             }
 
             StateManager = new StateManager(ConfigDataFolder.Value);
-            LampreyManager = new LampreyManager(lampreyListenPort: ConfigLampreyListenPort.Value);
+            LampreyManager = new LampreyManager(websocketListenPort: ConfigWebsocketListenPort.Value, lampreyListenPort: ConfigLampreyListenPort.Value);
             if (ConfigEnableLamprey.Value)
             {
                 LampreyManager.Start();
