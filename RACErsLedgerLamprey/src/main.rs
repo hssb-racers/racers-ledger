@@ -8,7 +8,7 @@ use std::net::TcpListener;
 use std::thread::spawn;
 use tungstenite::{connect, server::accept, Message};
 use url::Url;
-use colored::{control, Colorize};
+extern crate colored;
 
 use clap::{AppSettings, Clap};
 

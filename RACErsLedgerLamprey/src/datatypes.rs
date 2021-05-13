@@ -50,9 +50,9 @@ impl fmt::Display for SalvageEvent {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match &*self {
             SalvageEvent::ShiftSalvageLogEntry{object_name, mass, categories, salvaged_by, value, mass_based_value, destroyed, game_time, system_time} => {
-                write!(f, "{} ({}) {}{}{} worth {} via {} (item categories: [{}])",
-                game_time, // TODO(sariya) consistent formatting (2 decimal places)
-                system_time, // TODO(sariya) second-level resolution (not nanosecond resolution)
+                write!(f, "{:.2} ({}) {}{}{} worth {} via {} (item categories: [{}])",
+                game_time, 
+                system_time.to_rfc3339_opts(SecondsFormat::Secs, true),
                 if *destroyed {"Destroyed ".red().bold()} else {"Salvaged ".green().bold()},
                 if *mass_based_value {format!("{} kg of ", mass)} else {"".into()},
                 object_name,
