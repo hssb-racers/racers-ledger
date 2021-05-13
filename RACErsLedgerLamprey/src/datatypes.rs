@@ -28,8 +28,16 @@ pub enum SalvageEvent {
         // System time when object was salvaged
         system_time: DateTime<Utc>,
     },
-    StartShiftEvent,
-    EndShiftEvent,
+    #[serde(rename_all = "camelCase")]
+    StartShiftEvent {
+        // System time when shift was started
+        system_time: DateTime<Utc>,
+    },
+    #[serde(rename_all = "camelCase")]
+    EndShiftEvent {
+        // System time when shift ended
+        system_time: DateTime<Utc>
+    },
     #[serde(rename_all = "camelCase")]
     SetRACEInfoEvent {
         // ship seed
@@ -42,7 +50,9 @@ pub enum SalvageEvent {
         // dev claimed max theoretical value
         max_total_value: i64,
         // dev claimed salvage mass
-        max_salvage_mass: i64
+        max_salvage_mass: i64,
+        // System time when RACEInfo was queried
+        system_time: DateTime<Utc>
     }
 }
 
@@ -61,14 +71,14 @@ impl fmt::Display for SalvageEvent {
                 categories.join(",") // TODO(sariya) have some highlight override colors for these for common RACE categories???
             )
             },
-            SalvageEvent::StartShiftEvent => {
-                write!(f, "started new shift")
+            SalvageEvent::StartShiftEvent{system_time} => {
+                write!(f, "({}) started new shift", system_time.to_rfc3339_opts(SecondsFormat::Secs, true))
             },
-            SalvageEvent::EndShiftEvent => {
-                write!(f, "ended shift")
+            SalvageEvent::EndShiftEvent{system_time} => {
+                write!(f, "({}) ended shift", system_time.to_rfc3339_opts(SecondsFormat::Secs, true))
             },
-            SalvageEvent::SetRACEInfoEvent {seed, version, start_date_utc, max_total_value, max_salvage_mass} => {
-                write!(f, "current shift is a RACE: seed={} version={} start_date_utc={} max_total_value={} max_salvage_mass={}", seed, version, start_date_utc, max_total_value, max_salvage_mass)
+            SalvageEvent::SetRACEInfoEvent {seed, version, start_date_utc, max_total_value, max_salvage_mass, system_time} => {
+                write!(f, "({}) current shift is a RACE: seed={} version={} start_date_utc={} max_total_value={} max_salvage_mass={}", system_time.to_rfc3339_opts(SecondsFormat::Secs, true), seed, version, start_date_utc, max_total_value, max_salvage_mass)
             }
         }
     }

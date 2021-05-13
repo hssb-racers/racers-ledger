@@ -38,21 +38,26 @@ namespace RACErsLedger.DataTypes
     [Serializable]
     public class StartShiftEvent : LedgerEventBase
     {
-        // TODO(sariya) INCLUDE SYSTEM TIME HERE FOR LINEARIZATION LATER
+        public DateTime SystemTime { get; set; }
+        public StartShiftEvent()
+        {
+            SystemTime = DateTime.Now;
+        }
     }
 
     [Serializable]
     public class EndShiftEvent : LedgerEventBase
     {
-        // TODO(sariya) INCLUDE SYSTEM TIME HERE FOR LINEARIZATION LATER
-
+        public DateTime SystemTime { get; set; }
+        public EndShiftEvent()
+        {
+            SystemTime = DateTime.Now;
+        }
     }
 
     [Serializable]
     public class SetRACEInfoEvent : LedgerEventBase
     {
-        // TODO(sariya) INCLUDE SYSTEM TIME HERE FOR LINEARIZATION LATER
-
         // TODO(sariya): is there any reason we can't just have RACEInfo inherit from LedgerEventBase and use the same class for both things
         // instead of duplicating code here?
         public int Seed { get; }
@@ -60,14 +65,16 @@ namespace RACErsLedger.DataTypes
         public string StartDateUTC { get; }
         public int MaxTotalValue { get; }
         public int MaxSalvageMass { get; }
+        public DateTime SystemTime { get; private set; }
+
         public SetRACEInfoEvent(RACEInfo raceInfo)
         {
+            SystemTime = DateTime.Now;
             Seed = raceInfo.Seed;
             Version = raceInfo.Version;
             StartDateUTC = raceInfo.StartDateUTC;
             MaxTotalValue = raceInfo.MaxTotalValue;
             MaxSalvageMass = raceInfo.MaxSalvageMass;
-
         }
     }
     public class RACEInfo
@@ -108,15 +115,16 @@ namespace RACErsLedger.DataTypes
         public bool Destroyed { get; set; }
         // Seconds into the shift this object was salvaged
         public float GameTime { get; set; }
-        // System time when object was salvaged
+        // System time when *this object* was instantiated
         public DateTime SystemTime { get; set; }
 
         public ShiftSalvageLogEntry()
         {
         }
 
-        public ShiftSalvageLogEntry(string objectName, float mass, string[] categories, string salvagedBy, float value, bool massBasedValue, bool destroyed, float gameTime, DateTime systemTime)
+        public ShiftSalvageLogEntry(string objectName, float mass, string[] categories, string salvagedBy, float value, bool massBasedValue, bool destroyed, float gameTime)
         {
+            SystemTime = DateTime.Now;
             ObjectName = objectName;
             Mass = mass;
             Categories = categories;
@@ -125,7 +133,6 @@ namespace RACErsLedger.DataTypes
             MassBasedValue = massBasedValue;
             Destroyed = destroyed;
             GameTime = gameTime;
-            SystemTime = systemTime;
         }
         public new string ToString()
         {

@@ -63,9 +63,8 @@ namespace RACErsLedger.Patches
                 }
                 bool destroyed = (ev.State == SalvageableChangedEvent.SalvageableState.Destroyed);
                 float gameTime = timer.TimerCountsUp ? (float)timer.CurrentTime : timer.MaxTime - timer.CurrentTime;
-                DateTime systemTime = DateTime.Now;
 
-                Plugin.StateManager.CurrentShift.AddSalvage(objectName, mass, categories, salvagedBy, value, massBasedValue, destroyed, gameTime, systemTime);
+                Plugin.StateManager.CurrentShift.AddSalvage(objectName, mass, categories, salvagedBy, value, massBasedValue, destroyed, gameTime);
             }
             catch (Exception e) { Plugin.Log(LogLevel.Error, e.ToString()); }
         }

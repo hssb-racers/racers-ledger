@@ -105,7 +105,7 @@ namespace RACErsLedger
         }
         // TODO(sariya): how to design this API? it COULD just take the entire SalvageableChangedEvent and process that event here instead of doing it in the patched in handler?
         //               honestly, not sure what the right thing to do with C# design there is.
-        public void AddSalvage(string objectName, float mass, string[] categories, string salvagedBy, float value, bool massBasedValue, bool destroyed, float gameTime, DateTime systemTime)
+        public void AddSalvage(string objectName, float mass, string[] categories, string salvagedBy, float value, bool massBasedValue, bool destroyed, float gameTime)
         {
             // DIRTY HACK ALERT! I hate this but it fixes a bug. let's do it better honestly??
             // if the shift is over, no more adding stuff!
@@ -114,7 +114,7 @@ namespace RACErsLedger
                 Plugin.Log(LogLevel.Warning, "Tried to add salvage after shift ended! bug sariya to make this better!");
                 return;
             }
-            ShiftSalvageLogEntry entry = new ShiftSalvageLogEntry(objectName, mass, categories, salvagedBy, value, massBasedValue, destroyed, gameTime, systemTime);
+            ShiftSalvageLogEntry entry = new ShiftSalvageLogEntry(objectName, mass, categories, salvagedBy, value, massBasedValue, destroyed, gameTime);
             SalvageLogEntries.Add(entry);
             Plugin.LampreyManager.SendEvent(entry);
             Plugin.Log(LogLevel.Info, entry.ToString());
