@@ -19,6 +19,12 @@ namespace RACErsLedger.DataTypes
 
     public abstract class LedgerEventBase : ILedgerEvent
     {
+        public DateTime SystemTime { get; set; }
+        public LedgerEventBase()
+        {
+            SystemTime = DateTime.Now;
+        }
+
         // This is just for serialization's sake, please don't judge me
         // It's just the type of the variant. For compatibility with serde.rs (also since I couldn't easily find ways to have a custom format for #[serde(tag="$type")] decoding.
         // without, using TypeNameHandling: "$type":"RACErsLedger.DataTypes.ShiftSalvageLogEntry, RACErsLedger"
@@ -38,21 +44,11 @@ namespace RACErsLedger.DataTypes
     [Serializable]
     public class StartShiftEvent : LedgerEventBase
     {
-        public DateTime SystemTime { get; set; }
-        public StartShiftEvent()
-        {
-            SystemTime = DateTime.Now;
-        }
     }
 
     [Serializable]
     public class EndShiftEvent : LedgerEventBase
     {
-        public DateTime SystemTime { get; set; }
-        public EndShiftEvent()
-        {
-            SystemTime = DateTime.Now;
-        }
     }
 
     [Serializable]
@@ -65,11 +61,9 @@ namespace RACErsLedger.DataTypes
         public string StartDateUTC { get; }
         public int MaxTotalValue { get; }
         public int MaxSalvageMass { get; }
-        public DateTime SystemTime { get; private set; }
 
-        public SetRACEInfoEvent(RACEInfo raceInfo)
+        public SetRACEInfoEvent(RACEInfo raceInfo) : base()
         {
-            SystemTime = DateTime.Now;
             Seed = raceInfo.Seed;
             Version = raceInfo.Version;
             StartDateUTC = raceInfo.StartDateUTC;
@@ -115,16 +109,13 @@ namespace RACErsLedger.DataTypes
         public bool Destroyed { get; set; }
         // Seconds into the shift this object was salvaged
         public float GameTime { get; set; }
-        // System time when *this object* was instantiated
-        public DateTime SystemTime { get; set; }
 
-        public ShiftSalvageLogEntry()
+        public ShiftSalvageLogEntry() : base()
         {
         }
 
-        public ShiftSalvageLogEntry(string objectName, float mass, string[] categories, string salvagedBy, float value, bool massBasedValue, bool destroyed, float gameTime)
+        public ShiftSalvageLogEntry(string objectName, float mass, string[] categories, string salvagedBy, float value, bool massBasedValue, bool destroyed, float gameTime) : base()
         {
-            SystemTime = DateTime.Now;
             ObjectName = objectName;
             Mass = mass;
             Categories = categories;
