@@ -39,6 +39,9 @@ jobs:
           use-cross: true
           command: build
           args: --manifest-path RACErsLedgerLamprey/Cargo.toml --target x86_64-pc-windows-msvc
+      - id: dir-listing
+        run: ls -l RACErsLedgerLamprey/target/debug
+        shell: bash
       - name: extract built binary
         uses: actions/upload-artifact@v2
         with:
