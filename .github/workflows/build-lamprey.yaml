@@ -39,14 +39,11 @@ jobs:
           use-cross: true
           command: build
           args: --manifest-path RACErsLedgerLamprey/Cargo.toml --target x86_64-pc-windows-msvc
-      - id: dir-listing
-        run: find RACErsLedgerLamprey/
-        shell: bash
       - name: extract built binary
         uses: actions/upload-artifact@v2
         with:
           name: racers_ledger_lamprey-windows
-          path: RACErsLedgerLamprey/target/debug/racers_ledger_lamprey.exe
+          path: RACErsLedgerLamprey/target/x86_64-pc-windows-msvc/debug/racers_ledger_lamprey.exe
 
   test:
     name: Test Suite
