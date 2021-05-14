@@ -25,25 +25,25 @@ jobs:
 
   build-windows:
     name: Build for Windows
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: nightly
-          target: x86_64-pc-windows-gnu
+          target: x86_64-pc-windows-msvc
           override: true
       - uses: actions-rs/cargo@v1
         with:
           use-cross: true
           command: build
-          args: --manifest-path RACErsLedgerLamprey/Cargo.toml --target x86_64-pc-windows-gnu
+          args: --manifest-path RACErsLedgerLamprey/Cargo.toml --target x86_64-pc-windows-msvc
       - name: extract built binary
         uses: actions/upload-artifact@v2
         with:
           name: racers_ledger_lamprey-windows
-          path: RACErsLedgerLamprey/target/debug/racers_ledger_lamprey.exe
+          path: RACErsLedgerLamprey/target/x86_64-pc-windows-msvc/debug/racers_ledger_lamprey.exe
 
   test:
     name: Test Suite
