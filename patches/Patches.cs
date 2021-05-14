@@ -143,4 +143,34 @@ namespace RACErsLedger.Patches
             return true;
         }
     }
+
+    [HarmonyPatch]
+    class RACErsLedgerTimerTicks
+    {
+        [HarmonyTargetMethod]
+        [UsedImplicitly]
+        public static MethodBase TargetMethod()
+        {
+            return typeof(GameSessionTimerData).GetMethod("UpdateTimer", BindingFlags.Public | BindingFlags.Instance);
+        }
+
+        private static int previousTime;
+
+        [HarmonyPrefix]
+        [UsedImplicitly]
+        public static void Postfix()
+        {
+            var timer = World.DefaultGameObjectInjectionWorld.EntityManager.GetComponentData<GameSessionTimerData>(GameSession.CurrentSessionEntity);
+
+            // trigger the event only once a second (game runs it about 20 times a second)
+            if( previousTime == (int) timer.CurrentTime ){
+                return;
+            }
+            previousTime = (int) timer.CurrentTime;
+
+            Plugin.LampreyManager.SendEvent(new RACErsLedger.DataTypes.TimeTickEvent(timer.CurrentTime, timer.MaxTime, timer.IsFinished, timer.TimerCountsUp));
+
+            Plugin.Log(LogLevel.Debug, $"time tick of {timer.CurrentTime}, max time {timer.MaxTime}, finished: {timer.IsFinished}, TimerCountsUp: {timer.TimerCountsUp}");
+        }
+    }
 }

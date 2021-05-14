@@ -177,5 +177,21 @@ namespace RACErsLedger.DataTypes
         }
     }
 
+    public class TimeTickEvent : LedgerEventBase
+    {
+        public float CurrentTime;
+        public float MaxTime;
+        public bool IsFinished;
+        public bool TimerCountsUp;
+
+        public TimeTickEvent(float currentTime, float maxTime, bool isFinished, bool timerCountsUp) : base()
+        {
+            CurrentTime = currentTime;
+            MaxTime = maxTime;
+            IsFinished = isFinished;
+            TimerCountsUp = timerCountsUp;
+        }
+    }
+
 
 }
