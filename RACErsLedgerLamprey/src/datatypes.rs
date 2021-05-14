@@ -29,6 +29,15 @@ pub enum SalvageEvent {
         system_time: DateTime<Utc>,
     },
     #[serde(rename_all = "camelCase")]
+    GameStateChangedEvent {
+        // the state the game is now in
+        current_game_state: String,
+        // the state the game was in
+        previous_game_state: String,
+        // System time when the state change
+        system_time: DateTime<Utc>,
+    },
+    #[serde(rename_all = "camelCase")]
     StartShiftEvent {
         // System time when shift was started
         system_time: DateTime<Utc>,
@@ -70,6 +79,9 @@ impl fmt::Display for SalvageEvent {
                 salvaged_by,
                 categories.join(",") // TODO(sariya) have some highlight override colors for these for common RACE categories???
             )
+            },
+            SalvageEvent::GameStateChangedEvent{current_game_state, previous_game_state, system_time} => {
+                write!(f, "({}) game state changed from {} to {}", system_time.to_rfc3339_opts(SecondsFormat::Secs, true), previous_game_state, current_game_state)
             },
             SalvageEvent::StartShiftEvent{system_time} => {
                 write!(f, "({}) started new shift", system_time.to_rfc3339_opts(SecondsFormat::Secs, true))

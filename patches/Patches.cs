@@ -72,6 +72,10 @@ namespace RACErsLedger.Patches
         {
             try
             {
+                // surpress the seldom duplicate events towards the outside
+                if( ev.PrevGameState != ev.GameState ){
+                    Plugin.LampreyManager.SendEvent(new RACErsLedger.DataTypes.GameStateChangedEvent(ev.GameState, ev.PrevGameState));
+                }
                 Plugin.Log(LogLevel.Debug, $"received GameStateChangedEvent {{ GameState:{ev.GameState}, PrevGameState:{ev.PrevGameState} }}");
                 if (ev.GameState == GameSession.GameState.Gameplay && (ev.PrevGameState == GameSession.GameState.Splash || ev.PrevGameState == GameSession.GameState.Loading))
                 {

@@ -50,6 +50,42 @@ namespace RACErsLedger.DataTypes
     public class EndShiftEvent : LedgerEventBase
     {
     }
+    public class GameStateChangedEvent : LedgerEventBase
+    {
+        public string CurrentGameState { get; }
+        public string PreviousGameState { get; }
+        public GameStateChangedEvent (BBI.Unity.Game.GameSession.GameState current, BBI.Unity.Game.GameSession.GameState previous) : base()
+        {
+            CurrentGameState = GameStateEnumToString(current);
+            PreviousGameState = GameStateEnumToString(previous);
+        }
+        private string GameStateEnumToString(BBI.Unity.Game.GameSession.GameState state){
+            switch(state){
+                case  BBI.Unity.Game.GameSession.GameState.None:
+                    return "none";
+                case  BBI.Unity.Game.GameSession.GameState.Gameplay:
+                    return "gameplay";
+                case  BBI.Unity.Game.GameSession.GameState.Splash:
+                    return "splash";
+                case  BBI.Unity.Game.GameSession.GameState.GameOver:
+                    return "gameover";
+                case  BBI.Unity.Game.GameSession.GameState.GameComplete:
+                    return "gamecomplete";
+                case  BBI.Unity.Game.GameSession.GameState.Paused:
+                    return "paused";
+                case  BBI.Unity.Game.GameSession.GameState.UNUSED_01:
+                    return "unused01";
+                case  BBI.Unity.Game.GameSession.GameState.NIS:
+                    return "nis";
+                case  BBI.Unity.Game.GameSession.GameState.Hab:
+                    return "hab";
+                case  BBI.Unity.Game.GameSession.GameState.Loading:
+                    return "loading";
+                default:
+                    return "unknown state";
+            }
+        }
+    }
 
     [Serializable]
     public class SetRACEInfoEvent : LedgerEventBase
