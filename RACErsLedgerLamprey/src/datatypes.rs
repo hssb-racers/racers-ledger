@@ -8,6 +8,10 @@ use colored::Colorize;
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum SalvageEvent {
     #[serde(rename_all = "camelCase")]
+    WelcomeEvent {
+        msg: String,
+    },
+    #[serde(rename_all = "camelCase")]
     ShiftSalvageLogEntry {
         // Localized object name
         object_name: String,
@@ -68,6 +72,9 @@ pub enum SalvageEvent {
 impl fmt::Display for SalvageEvent {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match &*self {
+            SalvageEvent::WelcomeEvent{msg} => {
+                write!(f, "{}", msg)
+            },
             SalvageEvent::ShiftSalvageLogEntry{object_name, mass, categories, salvaged_by, value, mass_based_value, destroyed, game_time, system_time} => {
                 write!(f, "{:.2} ({}) {}{}{} worth {} via {} (item categories: [{}])",
                 game_time, 

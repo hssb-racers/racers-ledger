@@ -20,7 +20,7 @@ namespace RACErsLedger
         protected override void OnOpen()
         {
             Plugin.Log(LogLevel.Info, $"new client connected: {Context.UserEndPoint} (session {ID})");
-            Send("{\"msg\":\"hello new client!\"}");
+            Send("{\"msg\":\"hello new client!\",\"type\":\"welcomeEvent\"}");
         }
 
         protected override void OnError(ErrorEventArgs e)
