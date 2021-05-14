@@ -22,6 +22,14 @@ jobs:
         with:
           name: racers_ledger_lamprey-linux
           path: RACErsLedgerLamprey/target/debug/racers_ledger_lamprey
+      - name: Push binary to Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          files: |
+            RACErsLedgerLamprey/target/debug/racers_ledger_lamprey
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
   build-windows:
     name: Build for Windows
@@ -44,6 +52,15 @@ jobs:
         with:
           name: racers_ledger_lamprey-windows
           path: RACErsLedgerLamprey/target/x86_64-pc-windows-msvc/debug/racers_ledger_lamprey.exe
+      - name: Push binary to Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          files: |
+            RACErsLedgerLamprey/target/x86_64-pc-windows-msvc/debug/racers_ledger_lamprey.exe
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
 
   test:
     name: Test Suite
