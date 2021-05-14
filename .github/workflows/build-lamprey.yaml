@@ -32,13 +32,13 @@ jobs:
         with:
           profile: minimal
           toolchain: nightly
-          target: x86_64-pc-windows-gnu
+          target: x86_64-pc-windows-msvc
           override: true
       - uses: actions-rs/cargo@v1
         with:
           use-cross: true
           command: build
-          args: --manifest-path RACErsLedgerLamprey/Cargo.toml --target x86_64-pc-windows-gnu
+          args: --manifest-path RACErsLedgerLamprey/Cargo.toml --target x86_64-pc-windows-msvc
       - name: extract built binary
         uses: actions/upload-artifact@v2
         with:
