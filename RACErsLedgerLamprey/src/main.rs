@@ -20,12 +20,15 @@ struct Opts {
     connect_port: i32,
     /// Port for lamprey to listen on for subclients (i.e. visualizers, other plugins, etc)
     listen_port: i32,
-    /// A level of verbosity, and can be used multiple times.
+    /// Level of logging verbosity. No -v = Error only, -v = Info, -vv = Debug, -vvv = Trace.
     #[clap(short, long, parse(from_occurrences))]
     verbose: i32,
     /// Disable colored output.
-    #[clap(short, long)]
-    nocolorize: bool
+    #[clap(long)]
+    nocolorize: bool,
+    /// Suppress TimeTickEvent printing to console
+    #[clap(long)]
+    notime_tick: bool
 }
 
 fn main() {
@@ -61,6 +64,13 @@ fn main() {
                 debug!("trying to convert msg to object...");
                 let event: Result<SalvageEvent> = serde_json::from_str(string.as_str());
                 match event {
+                    Ok(SalvageEvent::TimeTickEvent{ .. }) => {
+                        let salvage_event = event.unwrap();
+                        debug!("decoded {:#?}", salvage_event);
+                        if !opts.notime_tick {
+                            println!("{}", salvage_event)
+                        }
+                    }
                     Ok(salvage_event) => {
                         debug!("decoded {:#?}", salvage_event);
                         println!("{}", salvage_event)
