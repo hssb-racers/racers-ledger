@@ -158,19 +158,17 @@ namespace RACErsLedger.Patches
 
         [HarmonyPrefix]
         [UsedImplicitly]
-        public static void Postfix()
+        public static void Postfix(GameSessionTimerData __instance)
         {
-            var timer = World.DefaultGameObjectInjectionWorld.EntityManager.GetComponentData<GameSessionTimerData>(GameSession.CurrentSessionEntity);
-
             // trigger the event only once a second (game runs it about 20 times a second)
-            if( previousTime == (int) timer.CurrentTime ){
+            if( previousTime == (int) __instance.CurrentTime ){
                 return;
             }
-            previousTime = (int) timer.CurrentTime;
+            previousTime = (int) __instance.CurrentTime;
 
-            Plugin.LampreyManager.SendEvent(new RACErsLedger.DataTypes.TimeTickEvent(timer.CurrentTime, timer.MaxTime, timer.TimerCountsUp));
+            Plugin.LampreyManager.SendEvent(new RACErsLedger.DataTypes.TimeTickEvent(__instance.CurrentTime, __instance.MaxTime, __instance.TimerCountsUp));
 
-            Plugin.Log(LogLevel.Debug, $"time tick of {timer.CurrentTime}, max time {timer.MaxTime}, TimerCountsUp: {timer.TimerCountsUp}");
+            Plugin.Log(LogLevel.Debug, $"time tick of {__instance.CurrentTime}, max time {__instance.MaxTime}, TimerCountsUp: {__instance.TimerCountsUp}");
         }
     }
 }
