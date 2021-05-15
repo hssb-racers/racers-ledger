@@ -181,15 +181,11 @@ namespace RACErsLedger.DataTypes
     {
         public float CurrentTime;
         public float MaxTime;
-        public bool IsFinished;
-        public bool TimerCountsUp;
-
-        public TimeTickEvent(float currentTime, float maxTime, bool isFinished, bool timerCountsUp) : base()
+        public TimeTickEvent(float currentTime, float maxTime, bool timerCountsUp) : base()
         {
-            CurrentTime = currentTime;
+            // the TimeTickEvent changes the meaning of CurrentTime compared to the game - it will always count up!
+            CurrentTime = timerCountsUp ? currentTime : maxTime-currentTime;
             MaxTime = maxTime;
-            IsFinished = isFinished;
-            TimerCountsUp = timerCountsUp;
         }
     }
 

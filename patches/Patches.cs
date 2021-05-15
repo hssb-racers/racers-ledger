@@ -168,9 +168,9 @@ namespace RACErsLedger.Patches
             }
             previousTime = (int) timer.CurrentTime;
 
-            Plugin.LampreyManager.SendEvent(new RACErsLedger.DataTypes.TimeTickEvent(timer.CurrentTime, timer.MaxTime, timer.IsFinished, timer.TimerCountsUp));
+            Plugin.LampreyManager.SendEvent(new RACErsLedger.DataTypes.TimeTickEvent(timer.CurrentTime, timer.MaxTime, timer.TimerCountsUp));
 
-            Plugin.Log(LogLevel.Debug, $"time tick of {timer.CurrentTime}, max time {timer.MaxTime}, finished: {timer.IsFinished}, TimerCountsUp: {timer.TimerCountsUp}");
+            Plugin.Log(LogLevel.Debug, $"time tick of {timer.CurrentTime}, max time {timer.MaxTime}, TimerCountsUp: {timer.TimerCountsUp}");
         }
     }
 }

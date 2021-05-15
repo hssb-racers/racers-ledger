@@ -73,10 +73,6 @@ pub enum SalvageEvent {
         current_time: f64,
         // the max length of the current shift
         max_time: f64,
-        // has this timer finished
-        is_finished: bool,
-        // is the timer constantly counting up or down?
-        timer_counts_up: bool,
         // System time when this Tick was registered
         system_time: DateTime<Utc>
     }
@@ -112,8 +108,8 @@ impl fmt::Display for SalvageEvent {
             SalvageEvent::SetRACEInfoEvent {seed, version, start_date_utc, max_total_value, max_salvage_mass, system_time} => {
                 write!(f, "({}) current shift is a RACE: seed={} version={} start_date_utc={} max_total_value={} max_salvage_mass={}", system_time.to_rfc3339_opts(SecondsFormat::Secs, true), seed, version, start_date_utc, max_total_value, max_salvage_mass)
             },
-            SalvageEvent::TimeTickEvent {current_time, max_time, is_finished, timer_counts_up, system_time} => {
-                write!(f, "({}) registered time tick to {}s, shift will end at {}s, shift length is {}s", system_time.to_rfc3339_opts(SecondsFormat::Secs, true), current_time, if *timer_counts_up { max_time } else { &0.0_f64 }, max_time )
+            SalvageEvent::TimeTickEvent {current_time, max_time, system_time} => {
+                write!(f, "({}) registered time tick to {}s, shift will end at {}s", system_time.to_rfc3339_opts(SecondsFormat::Secs, true), current_time, max_time )
             }
         }
     }
