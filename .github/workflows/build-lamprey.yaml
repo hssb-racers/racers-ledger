@@ -16,34 +16,51 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --manifest-path RACErsLedgerLamprey/Cargo.toml
+          args: --manifest-path RACErsLedgerLamprey/Cargo.toml --release
       - name: extract built binary
         uses: actions/upload-artifact@v2
         with:
           name: racers_ledger_lamprey-linux
-          path: RACErsLedgerLamprey/target/debug/racers_ledger_lamprey
+          path: RACErsLedgerLamprey/target/release/racers_ledger_lamprey
+      - name: Push binary to Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          files: |
+            RACErsLedgerLamprey/target/release/racers_ledger_lamprey
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
   build-windows:
     name: Build for Windows
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: nightly
-          target: x86_64-pc-windows-gnu
+          target: x86_64-pc-windows-msvc
           override: true
       - uses: actions-rs/cargo@v1
         with:
           use-cross: true
           command: build
-          args: --manifest-path RACErsLedgerLamprey/Cargo.toml --target x86_64-pc-windows-gnu
+          args: --manifest-path RACErsLedgerLamprey/Cargo.toml --target x86_64-pc-windows-msvc --release
       - name: extract built binary
         uses: actions/upload-artifact@v2
         with:
           name: racers_ledger_lamprey-windows
-          path: RACErsLedgerLamprey/target/debug/racers_ledger_lamprey.exe
+          path: RACErsLedgerLamprey/target/x86_64-pc-windows-msvc/release/racers_ledger_lamprey.exe
+      - name: Push binary to Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          files: |
+            RACErsLedgerLamprey/target/x86_64-pc-windows-msvc/release/racers_ledger_lamprey.exe
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
 
   test:
     name: Test Suite
