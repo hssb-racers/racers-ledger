@@ -72,6 +72,10 @@ namespace RACErsLedger.Patches
         {
             try
             {
+                // surpress the seldom duplicate events towards the outside
+                if( ev.PrevGameState != ev.GameState ){
+                    Plugin.LampreyManager.SendEvent(new RACErsLedger.DataTypes.GameStateChangedEvent(ev.GameState, ev.PrevGameState));
+                }
                 Plugin.Log(LogLevel.Debug, $"received GameStateChangedEvent {{ GameState:{ev.GameState}, PrevGameState:{ev.PrevGameState} }}");
                 if (ev.GameState == GameSession.GameState.Gameplay && (ev.PrevGameState == GameSession.GameState.Splash || ev.PrevGameState == GameSession.GameState.Loading))
                 {
@@ -137,6 +141,34 @@ namespace RACErsLedger.Patches
             Main.EventSystem.RemoveHandler(new Carbon.Core.Events.EventHandler<GameStateChangedEvent>(RACErsLedgerPatchAddHooks.GameStateChangedEventHandler));
 
             return true;
+        }
+    }
+
+    [HarmonyPatch]
+    class RACErsLedgerTimerTicks
+    {
+        [HarmonyTargetMethod]
+        [UsedImplicitly]
+        public static MethodBase TargetMethod()
+        {
+            return typeof(GameSessionTimerData).GetMethod("UpdateTimer", BindingFlags.Public | BindingFlags.Instance);
+        }
+
+        private static int previousTime;
+
+        [HarmonyPrefix]
+        [UsedImplicitly]
+        public static void Postfix(GameSessionTimerData __instance)
+        {
+            // trigger the event only once a second (game runs it about 20 times a second)
+            if( previousTime == (int) __instance.CurrentTime ){
+                return;
+            }
+            previousTime = (int) __instance.CurrentTime;
+
+            Plugin.LampreyManager.SendEvent(new RACErsLedger.DataTypes.TimeTickEvent(__instance.CurrentTime, __instance.MaxTime, __instance.TimerCountsUp));
+
+            Plugin.Log(LogLevel.Debug, $"time tick of {__instance.CurrentTime}, max time {__instance.MaxTime}, TimerCountsUp: {__instance.TimerCountsUp}");
         }
     }
 }

@@ -19,6 +19,12 @@ namespace RACErsLedger.DataTypes
 
     public abstract class LedgerEventBase : ILedgerEvent
     {
+        public DateTime SystemTime { get; set; }
+        public LedgerEventBase()
+        {
+            SystemTime = DateTime.Now;
+        }
+
         // This is just for serialization's sake, please don't judge me
         // It's just the type of the variant. For compatibility with serde.rs (also since I couldn't easily find ways to have a custom format for #[serde(tag="$type")] decoding.
         // without, using TypeNameHandling: "$type":"RACErsLedger.DataTypes.ShiftSalvageLogEntry, RACErsLedger"
@@ -38,20 +44,47 @@ namespace RACErsLedger.DataTypes
     [Serializable]
     public class StartShiftEvent : LedgerEventBase
     {
-        public DateTime SystemTime { get; set; }
-        public StartShiftEvent()
-        {
-            SystemTime = DateTime.Now;
-        }
     }
 
     [Serializable]
     public class EndShiftEvent : LedgerEventBase
     {
-        public DateTime SystemTime { get; set; }
-        public EndShiftEvent()
+    }
+    [Serializable]
+    public class GameStateChangedEvent : LedgerEventBase
+    {
+        public string CurrentGameState { get; }
+        public string PreviousGameState { get; }
+        public GameStateChangedEvent (BBI.Unity.Game.GameSession.GameState current, BBI.Unity.Game.GameSession.GameState previous) : base()
         {
-            SystemTime = DateTime.Now;
+            CurrentGameState = GameStateEnumToString(current);
+            PreviousGameState = GameStateEnumToString(previous);
+        }
+        private string GameStateEnumToString(BBI.Unity.Game.GameSession.GameState state){
+            switch(state){
+                case  BBI.Unity.Game.GameSession.GameState.None:
+                    return "none";
+                case  BBI.Unity.Game.GameSession.GameState.Gameplay:
+                    return "gameplay";
+                case  BBI.Unity.Game.GameSession.GameState.Splash:
+                    return "splash";
+                case  BBI.Unity.Game.GameSession.GameState.GameOver:
+                    return "gameover";
+                case  BBI.Unity.Game.GameSession.GameState.GameComplete:
+                    return "gamecomplete";
+                case  BBI.Unity.Game.GameSession.GameState.Paused:
+                    return "paused";
+                case  BBI.Unity.Game.GameSession.GameState.UNUSED_01:
+                    return "unused01";
+                case  BBI.Unity.Game.GameSession.GameState.NIS:
+                    return "nis";
+                case  BBI.Unity.Game.GameSession.GameState.Hab:
+                    return "hab";
+                case  BBI.Unity.Game.GameSession.GameState.Loading:
+                    return "loading";
+                default:
+                    return "unknown state";
+            }
         }
     }
 
@@ -65,11 +98,9 @@ namespace RACErsLedger.DataTypes
         public string StartDateUTC { get; }
         public int MaxTotalValue { get; }
         public int MaxSalvageMass { get; }
-        public DateTime SystemTime { get; private set; }
 
-        public SetRACEInfoEvent(RACEInfo raceInfo)
+        public SetRACEInfoEvent(RACEInfo raceInfo) : base()
         {
-            SystemTime = DateTime.Now;
             Seed = raceInfo.Seed;
             Version = raceInfo.Version;
             StartDateUTC = raceInfo.StartDateUTC;
@@ -115,16 +146,13 @@ namespace RACErsLedger.DataTypes
         public bool Destroyed { get; set; }
         // Seconds into the shift this object was salvaged
         public float GameTime { get; set; }
-        // System time when *this object* was instantiated
-        public DateTime SystemTime { get; set; }
 
-        public ShiftSalvageLogEntry()
+        public ShiftSalvageLogEntry() : base()
         {
         }
 
-        public ShiftSalvageLogEntry(string objectName, float mass, string[] categories, string salvagedBy, float value, bool massBasedValue, bool destroyed, float gameTime)
+        public ShiftSalvageLogEntry(string objectName, float mass, string[] categories, string salvagedBy, float value, bool massBasedValue, bool destroyed, float gameTime) : base()
         {
-            SystemTime = DateTime.Now;
             ObjectName = objectName;
             Mass = mass;
             Categories = categories;
@@ -147,6 +175,18 @@ namespace RACErsLedger.DataTypes
             sb.Append(ObjectName);
             sb.AppendFormat(" worth {0:C} via {1}", Value, SalvagedBy);
             return sb.ToString();
+        }
+    }
+    [Serializable]
+    public class TimeTickEvent : LedgerEventBase
+    {
+        public float CurrentTime;
+        public float MaxTime;
+        public TimeTickEvent(float currentTime, float maxTime, bool timerCountsUp) : base()
+        {
+            // the TimeTickEvent changes the meaning of CurrentTime compared to the game - it will always count up!
+            CurrentTime = timerCountsUp ? currentTime : maxTime-currentTime;
+            MaxTime = maxTime;
         }
     }
 

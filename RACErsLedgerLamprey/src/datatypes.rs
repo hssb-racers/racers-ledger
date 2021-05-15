@@ -8,6 +8,10 @@ use colored::Colorize;
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum SalvageEvent {
     #[serde(rename_all = "camelCase")]
+    WelcomeEvent {
+        msg: String,
+    },
+    #[serde(rename_all = "camelCase")]
     ShiftSalvageLogEntry {
         // Localized object name
         object_name: String,
@@ -26,6 +30,15 @@ pub enum SalvageEvent {
         // Seconds into the shift this object was salvaged
         game_time: f32,
         // System time when object was salvaged
+        system_time: DateTime<Utc>,
+    },
+    #[serde(rename_all = "camelCase")]
+    GameStateChangedEvent {
+        // the state the game is now in
+        current_game_state: String,
+        // the state the game was in
+        previous_game_state: String,
+        // System time when the state change
         system_time: DateTime<Utc>,
     },
     #[serde(rename_all = "camelCase")]
@@ -53,12 +66,24 @@ pub enum SalvageEvent {
         max_salvage_mass: i64,
         // System time when RACEInfo was queried
         system_time: DateTime<Utc>
+    },
+    #[serde(rename_all = "camelCase")]
+    TimeTickEvent {
+        // the current in-game time displayed
+        current_time: f64,
+        // the max length of the current shift
+        max_time: f64,
+        // System time when this Tick was registered
+        system_time: DateTime<Utc>
     }
 }
 
 impl fmt::Display for SalvageEvent {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match &*self {
+            SalvageEvent::WelcomeEvent{msg} => {
+                write!(f, "{}", msg)
+            },
             SalvageEvent::ShiftSalvageLogEntry{object_name, mass, categories, salvaged_by, value, mass_based_value, destroyed, game_time, system_time} => {
                 write!(f, "{:.2} ({}) {}{}{} worth {} via {} (item categories: [{}])",
                 game_time, 
@@ -71,6 +96,9 @@ impl fmt::Display for SalvageEvent {
                 categories.join(",") // TODO(sariya) have some highlight override colors for these for common RACE categories???
             )
             },
+            SalvageEvent::GameStateChangedEvent{current_game_state, previous_game_state, system_time} => {
+                write!(f, "({}) game state changed from {} to {}", system_time.to_rfc3339_opts(SecondsFormat::Secs, true), previous_game_state, current_game_state)
+            },
             SalvageEvent::StartShiftEvent{system_time} => {
                 write!(f, "({}) started new shift", system_time.to_rfc3339_opts(SecondsFormat::Secs, true))
             },
@@ -79,6 +107,9 @@ impl fmt::Display for SalvageEvent {
             },
             SalvageEvent::SetRACEInfoEvent {seed, version, start_date_utc, max_total_value, max_salvage_mass, system_time} => {
                 write!(f, "({}) current shift is a RACE: seed={} version={} start_date_utc={} max_total_value={} max_salvage_mass={}", system_time.to_rfc3339_opts(SecondsFormat::Secs, true), seed, version, start_date_utc, max_total_value, max_salvage_mass)
+            },
+            SalvageEvent::TimeTickEvent {current_time, max_time, system_time} => {
+                write!(f, "({}) registered time tick to {}s, shift will end at {}s", system_time.to_rfc3339_opts(SecondsFormat::Secs, true), current_time, max_time )
             }
         }
     }
