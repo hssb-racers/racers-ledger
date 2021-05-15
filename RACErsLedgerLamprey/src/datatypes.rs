@@ -78,6 +78,12 @@ pub enum SalvageEvent {
     }
 }
 
+// TODO(sariya) should this formatting be part of main.rs's loop instead of here? Right now we're doing coloring and all that fun stuff,
+// which is neat and all but somewhat outside of the "concern" that the datatypes themselves are solving.
+//
+// That said, it also makes sense to have a pretty-printable version here, and have customized outputs in the console log sink, whenever that gets implemented.
+// Also: the question of if this application or another one that's a client of this one is the correct place to put log sinks is an open question, still, so I'm not
+// married to any change in particular.
 impl fmt::Display for SalvageEvent {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match &*self {
