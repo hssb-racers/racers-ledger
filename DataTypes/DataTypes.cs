@@ -50,6 +50,7 @@ namespace RACErsLedger.DataTypes
     public class EndShiftEvent : LedgerEventBase
     {
     }
+    [Serializable]
     public class GameStateChangedEvent : LedgerEventBase
     {
         public string CurrentGameState { get; }
@@ -176,7 +177,7 @@ namespace RACErsLedger.DataTypes
             return sb.ToString();
         }
     }
-
+    [Serializable]
     public class TimeTickEvent : LedgerEventBase
     {
         public float CurrentTime;
