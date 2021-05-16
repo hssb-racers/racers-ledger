@@ -1,9 +1,11 @@
-﻿using JetBrains.Annotations;
+﻿using BepInEx;
+using JetBrains.Annotations;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using RACErsLedger.DataTypes;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Net;
 using WebSocketSharp;
 using WebSocketSharp.Server;
@@ -33,7 +35,6 @@ namespace RACErsLedger
     {
         private readonly int _lampreyListenPort;
         private readonly int _websocketListenPort;
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0044:Add readonly modifier", Justification = "implementation coming shortly")]
         private Process _lampreyProcess;
         [CanBeNull] private WebSocketServer _server;
         private static readonly JsonSerializerSettings JsonSerializerSettings = new JsonSerializerSettings
@@ -52,12 +53,17 @@ namespace RACErsLedger
 
         internal void Start()
         {
-            var rnd = new Random();
             _server = new WebSocketServer(IPAddress.Loopback, _websocketListenPort);
             _server.AddWebSocketService<EventBroadcastServer>("/racers-ledger/");
             _server.Start();
             Plugin.Log(LogLevel.Message, $"listening on ws://127.0.0.1:{_server.Port}/racers-ledger/");
-            // TODO(sariya) actually launch lamprey process...
+            try
+            {
+                _lampreyProcess = Process.Start(Path.Combine(Paths.PluginPath, "RACErsLedger", "racers_ledger_lamprey.exe"), $"{_websocketListenPort} {_lampreyListenPort}");
+            } catch (Exception e)
+            {
+                Plugin.Log(LogLevel.Error, $"failed to launch lamprey! {e}");
+            }
         }
 
         internal void Stop()
@@ -71,7 +77,6 @@ namespace RACErsLedger
                     session.Context.WebSocket.CloseAsync(CloseStatusCode.Normal);
                 }
             }
-            // TODO(sariya) make rust process kill itself when it notices parent has died so it's safe if this isn't graceful
             _lampreyProcess.Close();
             _server = null;
         }
