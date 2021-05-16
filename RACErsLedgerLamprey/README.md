@@ -9,6 +9,18 @@ Goals:
  Non-goals:
 - enough flexibility to work with anything that isn't the ledger as a host
 
+
+## API
+API is currently at version 0. This implies that it is totally unstable and can change on any release with no warning.
+
+Currently provided:
+
+| route | description |
+| ----- | ----------- |
+| `/api/v0/status` | JSON document containing current game state. Currently this is `{in_shift: bool}`. |
+| `/api/v0/racers-ledger-proxy` | Websocket endpoint. Connect to it and the lamprey server will stream every salvage event it hears about from the mod directly to you. |
+
+
 ## What's a lamprey?
 
 from a conversation with a friend:

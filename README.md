@@ -18,7 +18,7 @@ Hardspace Shipbreaker.
 
 BepInEx: https://github.com/BepInEx/BepInEx/releases (You want the x64 .zip.)
 
-This mod (click [here or on the Releases tab](https://git.sariya.dev/sariya/racers-ledger/releases) and download the `.dll` file of the latest release)
+This mod (click [here or on the Releases tab](https://git.sariya.dev/sariya/racers-ledger/releases) and download the `.zip` file of the latest release)
 
 ## Installation
 
@@ -26,7 +26,7 @@ This mod (click [here or on the Releases tab](https://git.sariya.dev/sariya/race
 
 Extract BepInEx to the root Hardspace Shipbreaker folder so `winhttp.dll` is in the same folder as `Shipbreaker.exe`.
 
-Extract this mod so `RACErsLedger.dll` is placed like this: `Hardspace Shipbreaker\BepInEx\plugins\RACErsLedger.dll`.
+Extract the `.zip` you downloaded. Drag the entire `RACErsLedger` plugin folder into `Hardspace Shipbreaker\BepInEx\plugins\RACErsLedger` -- the folder should stay together. 
 
 # Linux
 
@@ -61,17 +61,20 @@ Config options:
 |      key     |                                              description                                             | default                             |
 |:------------:|:----------------------------------------------------------------------------------------------------:|-------------------------------------|
 | `DataFolder` | Where to store the CSVs of your salvage summaries ~or whatever other bullshit i decide to put there~ | `HardspaceShipbreaker\RACErsLedger` |
+| `UseLamprey` | Enable [sidecar process](https://git.sariya.dev/sariya/racers-ledger/src/branch/main/RACErsLedgerLamprey/README.md) for streaming events to interested clients (i.e. live data visualizers) | true |
+| `LampreyListenPort` | (Advanced users only) What port does the lamprey process listen on? | 42069 |
+| `WebsocketListenPort` | (Advanced users only) What port does the mod serve a stream of salvage data on? | 32325 |
 
 ## Updating
 
-To update to a new RACErs Ledger version, navigate to [the releases tab](https://git.sariya.dev/sariya/racers-ledger/releases), download the `.dll` from the latest release, and overwrite `RACErsLedger.dll` in your install location.
+To update to a new RACErs Ledger version, navigate to [the releases tab](https://git.sariya.dev/sariya/racers-ledger/releases), download the `.zip` from the latest release, and drag the entire folder into your BepInEx plugins path, overwriting any conflicts.
 If Hardspace: Shipbreaker is already running, you will need to close it to be able to overwrite the file.
 
 ## Un-installation
 
 BepInEx uses `winhttp.dll` as an injector/loader. Renaming or deleting this file is enough to disable both this mod and the loader.
 
-Or just remove `RACErsLedger.dll` from the plugins folder.
+Or just remove the `RACErsLedger` folder from the plugins folder.
 
 ## Support
 

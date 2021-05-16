@@ -17,7 +17,7 @@ extern crate colored;
 use clap::{AppSettings, Clap};
 
 #[derive(Clap)]
-#[clap(version = "0.1", author = "Sariya Melody <sariya@sariya.garden>")]
+#[clap(version = "0.2", author = "Sariya Melody <sariya@sariya.garden>")]
 #[clap(setting = AppSettings::ColoredHelp)]
 struct Opts {
     /// Port for lamprey to connect to and echo events from
