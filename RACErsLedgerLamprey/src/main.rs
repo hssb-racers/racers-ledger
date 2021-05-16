@@ -1,18 +1,16 @@
 mod datatypes;
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
 pub use crate::datatypes::*;
 
-use log::{debug, error, info, LevelFilter};
-use serde_json::Result;
+use log::{info, trace, LevelFilter};
 use simple_logger::SimpleLogger;
-use tokio::net::{TcpListener, TcpStream};
-use tokio::sync::broadcast;
-use tokio::sync::broadcast::error::RecvError;
-use tokio::sync::broadcast::*;
+
+use tokio::sync::{broadcast, mpsc, RwLock};
 //use std::thread::spawn;
 use async_tungstenite::{tokio::connect_async, tungstenite::Message};
 use futures::prelude::*;
+use serde::Serialize;
 use url::Url;
 extern crate colored;
 
@@ -23,9 +21,9 @@ use clap::{AppSettings, Clap};
 #[clap(setting = AppSettings::ColoredHelp)]
 struct Opts {
     /// Port for lamprey to connect to and echo events from
-    connect_port: i32,
+    connect_port: u16,
     /// Port for lamprey to listen on for subclients (i.e. visualizers, other plugins, etc)
-    listen_port: i32,
+    listen_port: u16,
     /// Level of logging verbosity. No -v = Error only, -v = Info, -vv = Debug, -vvv = Trace.
     #[clap(short, long, parse(from_occurrences))]
     verbose: i32,
@@ -36,6 +34,18 @@ struct Opts {
     #[clap(long)]
     notime_tick: bool,
 }
+
+/// State of currently connected clients.
+///
+/// Key is "ID" (increasing atomic usize handlers::NEXT_USER_ID) (which is gross and tech debt but whatever i'm not dealing with this right now)
+/// Value is a handle to send things to that client.
+pub type Clients =
+    Arc<RwLock<HashMap<usize, mpsc::UnboundedSender<Result<warp::ws::Message, warp::Error>>>>>;
+#[derive(Default, Serialize)]
+pub struct LedgerState {
+    in_shift: bool,
+}
+pub type State = Arc<RwLock<LedgerState>>;
 
 #[tokio::main]
 pub async fn main() {
@@ -58,10 +68,13 @@ pub async fn main() {
         opts.connect_port, opts.listen_port
     );
 
+    let clients = Clients::default();
+    let state = State::default();
+
     // Kick off the mod<->lamprey WS connection! We should call this "mod websocket" for consistency...
-    let (ledger_event_sender_original, _) = broadcast::channel(512);
+    let (ledger_events_sender_original, _) = broadcast::channel(512);
     let opts_inner = Arc::clone(&opts);
-    let ledger_event_sender = ledger_event_sender_original.clone();
+    let ledger_events_sender = ledger_events_sender_original.clone();
     tokio::spawn(async move {
         let connect_destination =
             format!("ws://localhost:{}/racers-ledger/", opts_inner.connect_port);
@@ -81,30 +94,32 @@ pub async fn main() {
                 .unwrap()
                 .expect("ran into an error with the message somehow i guess");
 
-            debug!("received message {}", msg);
+            trace!("received message {}", msg);
             match msg {
                 Message::Text(string) => {
-                    debug!("trying to convert msg to object...");
-                    let event: Result<SalvageEvent> = serde_json::from_str(string.as_str());
+                    trace!("trying to convert msg to object...");
+                    let event: Result<SalvageEvent, serde_json::Error> =
+                        serde_json::from_str(string.as_str());
                     if let Ok(salvage_event) = event {
                         // if we ever make the console sink optional this unwrap isn't guaranteed to work so we'll
                         // need to implement some kind of retry logic maybe
-                        ledger_event_sender.send(salvage_event).unwrap();
+                        ledger_events_sender.send(salvage_event).unwrap();
                     }
                 }
                 Message::Ping(data) => {
-                    debug!("received ping! (data: {:?})", data);
+                    trace!("received ping! (data: {:?})", data);
                 }
                 Message::Pong(data) => {
-                    debug!("received pong! (data: {:?}", data);
+                    trace!("received pong! (data: {:?}", data);
                 }
                 Message::Binary(data) => {
-                    debug!("received binary data: {:?}", data)
+                    trace!("received binary data: {:?}", data)
                 }
                 Message::Close(close_frame) => {
-                    debug!("received close!");
+                    // TODO(sariya) implement retry logic here
+                    trace!("received close!");
                     if let Some(close_frame) = close_frame {
-                        debug!("close frame info: {:#?}", close_frame)
+                        trace!("close frame info: {:#?}", close_frame)
                     }
                 }
             }
@@ -112,20 +127,187 @@ pub async fn main() {
     });
     // Spawn a console sink to log when we get new ledger events
     let opts_inner = Arc::clone(&opts);
-    let mut ledger_event_receiver = ledger_event_sender_original.subscribe();
+    let ledger_events_receiver = ledger_events_sender_original.subscribe();
     tokio::spawn(async move {
+        sinks::console_sink(ledger_events_receiver, !opts_inner.notime_tick).await
+    });
+    let ledger_events_receiver = ledger_events_sender_original.subscribe();
+    let state_clone = state.clone();
+    tokio::spawn(
+        async move { sinks::state_updater_sink(ledger_events_receiver, state_clone).await },
+    );
+
+    let ledger_events_receiver = ledger_events_sender_original.subscribe();
+    let clients_clone = clients.clone();
+    tokio::spawn(async move {
+        sinks::websocket_client_updater_sink(ledger_events_receiver, clients_clone).await
+    });
+    let server = warp::serve(filters::api(state.clone(), clients.clone()));
+    server.run(([127, 0, 0, 1], opts.listen_port)).await;
+}
+
+mod filters {
+    use std::convert::Infallible;
+
+    use super::handlers;
+    use super::Clients;
+    use super::State;
+    use warp::Filter;
+    pub fn api(
+        state: State,
+        clients: Clients,
+    ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+        warp::path("api")
+            .and(warp::path("v0").and(status(state.clone()).or(ledger_proxy(clients.clone()))))
+    }
+    pub fn status(
+        state: State,
+    ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+        warp::path!("status")
+            .and(warp::path::end())
+            .and(warp::get())
+            .and(with_state(state.clone()))
+            .and_then(handlers::handle_status)
+    }
+
+    pub fn ledger_proxy(
+        clients: Clients,
+    ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+        warp::path!("racers-ledger-proxy")
+            .and(warp::ws())
+            .and(with_clients(clients))
+            .map(move |ws: warp::ws::Ws, clients| {
+                ws.on_upgrade(move |socket| {
+                    handlers::handle_websocket_ledger_proxy_connected(socket, clients)
+                })
+            })
+    }
+
+    fn with_state(state: State) -> impl Filter<Extract = (State,), Error = Infallible> + Clone {
+        warp::any().map(move || state.clone())
+    }
+    fn with_clients(
+        clients: Clients,
+    ) -> impl Filter<Extract = (Clients,), Error = Infallible> + Clone {
+        warp::any().map(move || clients.clone())
+    }
+}
+
+mod handlers {
+    use std::{
+        convert::Infallible,
+        sync::atomic::{AtomicUsize, Ordering},
+    };
+
+    use futures::{FutureExt, StreamExt};
+    use log::{debug, error, info};
+    use tokio::sync::mpsc;
+    use tokio_stream::wrappers::UnboundedReceiverStream;
+    use warp::ws::WebSocket;
+
+    use super::Clients;
+    use super::State;
+
+    /// global unique user id counter, key for Clients
+    static NEXT_USER_ID: AtomicUsize = AtomicUsize::new(1);
+
+    pub async fn handle_websocket_ledger_proxy_connected(websocket: WebSocket, clients: Clients) {
+        let my_id = NEXT_USER_ID.fetch_add(1, Ordering::Relaxed);
+        let (user_ws_tx, mut user_ws_rx) = websocket.split();
+        let (tx, rx) = mpsc::unbounded_channel();
+        let rx = UnboundedReceiverStream::new(rx);
+        debug!("new client connected wooooo");
+        tokio::task::spawn(rx.forward(user_ws_tx).map(|result| {
+            if let Err(e) = result {
+                error!("websocket send error: {}", e);
+            }
+        }));
+        clients.write().await.insert(my_id, tx);
+        while let Some(result) = user_ws_rx.next().await {
+            match result {
+                Err(e) => {
+                    error!("websocket error (uid={}): {}", my_id, e);
+                    break;
+                }
+                _ => {}
+            };
+        }
+        handle_websocket_ledger_proxy_disconnected(my_id, &clients).await;
+    }
+
+    pub async fn handle_websocket_ledger_proxy_disconnected(my_id: usize, clients: &Clients) {
+        info!("disconnecting websocket user {}", my_id);
+        clients.write().await.remove(&my_id);
+    }
+
+    pub async fn handle_status(state: State) -> Result<impl warp::Reply, Infallible> {
+        let state = state.read().await;
+        Ok(warp::reply::json(&*state))
+    }
+}
+
+mod sinks {
+    use super::Clients;
+    use super::State;
+    use log::{debug, error, trace};
+    use serde_json::json;
+    use tokio::sync::broadcast::{error::RecvError, Receiver};
+    use warp::ws::Message;
+
+    use crate::SalvageEvent;
+
+    pub async fn websocket_client_updater_sink(
+        mut ledger_events_receiver: Receiver<SalvageEvent>,
+        clients: Clients,
+    ) {
         loop {
-            let recv_result = ledger_event_receiver.recv().await;
+            let recv_result = ledger_events_receiver.recv().await;
+            match recv_result {
+                Ok(salvage_event) => {
+                    for (client_id, tx) in clients.read().await.iter() {
+                        debug!("attempted to send data to client {}", client_id);
+                        let json = serde_json::to_string(&salvage_event).unwrap_or_else(|_| {
+                            error!(
+                                "somehow failed to serialize salvage event to string: {:#?}",
+                                salvage_event
+                            );
+                            json!({
+                                "type": "error",
+                                "message": "could not serialize salvage event :("
+                            })
+                            .to_string()
+                        });
+                        if let Err(_disconnected) = tx.send(Ok(Message::text(json))) {
+                            // the tx is disconnected.
+                        }
+                    }
+                }
+                Err(RecvError::Lagged(lagged_messages)) => {
+                    error!("console sink missed {} messages :(", lagged_messages)
+                }
+                Err(RecvError::Closed) => {
+                    panic!("somehow the console sink got a RecvError::Closed, this is a problem, bug sariya about it");
+                }
+            }
+        }
+    }
+
+    pub async fn console_sink(
+        mut ledger_events_receiver: Receiver<SalvageEvent>,
+        log_time_tick: bool,
+    ) {
+        loop {
+            let recv_result = ledger_events_receiver.recv().await;
             match recv_result {
                 Ok(salvage_event) => match salvage_event {
                     SalvageEvent::TimeTickEvent { .. } => {
-                        debug!("decoded {:#?}", salvage_event);
-                        if !opts_inner.notime_tick {
+                        trace!("decoded {:#?}", salvage_event);
+                        if log_time_tick {
                             println!("{}", salvage_event)
                         }
                     }
                     salvage_event => {
-                        debug!("decoded {:#?}", salvage_event);
+                        trace!("decoded {:#?}", salvage_event);
                         println!("{}", salvage_event)
                     }
                 },
@@ -137,22 +319,36 @@ pub async fn main() {
                 }
             }
         }
-    });
-    let listener = TcpListener::bind(format!("127.0.0.1:{}", opts.listen_port))
-        .await
-        .expect("failed to start listener, dying");
-    loop {
-        let ledger_event_receiver = ledger_event_sender_original.subscribe();
-        let (socket, _) = listener.accept().await.unwrap();
-        // TODO: handle other routes instead of just websocket listen
-        tokio::spawn(async move {
-            handle_client_websocket(socket, ledger_event_receiver).await;
-        });
     }
-}
-
-pub async fn handle_client_websocket(
-    socket: TcpStream,
-    ledger_event_receiver: Receiver<SalvageEvent>,
-) {
+    pub async fn state_updater_sink(
+        mut ledger_events_receiver: Receiver<SalvageEvent>,
+        state: State,
+    ) {
+        loop {
+            let recv_result = ledger_events_receiver.recv().await;
+            match recv_result {
+                Ok(salvage_event) => match salvage_event {
+                    SalvageEvent::StartShiftEvent { .. } => {
+                        debug!("startshift event received, updating state");
+                        let mut state = state.write().await;
+                        (*state).in_shift = true;
+                        debug!("startshift event done updating state");
+                    }
+                    SalvageEvent::EndShiftEvent { .. } => {
+                        debug!("endshift event received, updating state");
+                        let mut state = state.write().await;
+                        (*state).in_shift = false;
+                        debug!("endshift event done updating state");
+                    }
+                    _ => {}
+                },
+                Err(RecvError::Lagged(lagged_messages)) => {
+                    error!("status updater sink missed {} messages :(", lagged_messages)
+                }
+                Err(RecvError::Closed) => {
+                    panic!("somehow the status updater sink got a RecvError::Closed, this is a problem, bug sariya about it");
+                }
+            }
+        }
+    }
 }
