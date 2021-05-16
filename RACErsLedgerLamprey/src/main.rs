@@ -6,7 +6,7 @@ pub use crate::datatypes::*;
 use log::{info, trace, LevelFilter};
 use simple_logger::SimpleLogger;
 
-use tokio::sync::{broadcast, mpsc, RwLock};
+use tokio::sync::{broadcast, mpsc, oneshot, RwLock};
 //use std::thread::spawn;
 use async_tungstenite::{tokio::connect_async, tungstenite::Message};
 use futures::prelude::*;
@@ -71,13 +71,16 @@ pub async fn main() {
     let clients = Clients::default();
     let state = State::default();
 
+    let (shutdown_tx, shutdown_rx) = oneshot::channel();
+
     // Kick off the mod<->lamprey WS connection! We should call this "mod websocket" for consistency...
     let (ledger_events_sender_original, _) = broadcast::channel(512);
-    let opts_inner = Arc::clone(&opts);
+    let opts_clone = Arc::clone(&opts);
     let ledger_events_sender = ledger_events_sender_original.clone();
+    let clients_clone = clients.clone();
     tokio::spawn(async move {
         let connect_destination =
-            format!("ws://localhost:{}/racers-ledger/", opts_inner.connect_port);
+            format!("ws://localhost:{}/racers-ledger/", opts_clone.connect_port);
         let (websocketstream, response) =
             connect_async(Url::parse(connect_destination.as_str()).unwrap())
                 .await
@@ -116,20 +119,40 @@ pub async fn main() {
                     trace!("received binary data: {:?}", data)
                 }
                 Message::Close(close_frame) => {
-                    // TODO(sariya) implement retry logic here
                     trace!("received close!");
+                    // default code 1000 "normal closure"
+                    // see https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent for meanings of codes
+                    let code = 1000_u16;
+                    let reason = "game closed! (probably)";
                     if let Some(close_frame) = close_frame {
-                        trace!("close frame info: {:#?}", close_frame)
+                        // TODO(sariya) pass down the code/reason to consumers?
+                        trace!("close frame info: {:#?}", close_frame);
                     }
+
+                    // server died, let's clean up and tell our clients and die too
+                    // TODO(sariya) this should probably be in the updater sink, but it
+                    // unfortunately needs info to data (the message::close frame)
+                    for (_, tx) in clients_clone.read().await.iter() {
+                        if let Err(_disconnected) =
+                            tx.send(Ok(warp::ws::Message::close_with(code, reason)))
+                        {
+                            // the tx is disconnected and already gone
+                        }
+                    }
+                    // let's get the webserver shut down too, now!
+                    shutdown_tx
+                        .send(())
+                        .expect("somehow failed sending the shutdown signal lmao");
+                    break;
                 }
             }
         }
     });
     // Spawn a console sink to log when we get new ledger events
-    let opts_inner = Arc::clone(&opts);
+    let opts_clone = Arc::clone(&opts);
     let ledger_events_receiver = ledger_events_sender_original.subscribe();
     tokio::spawn(async move {
-        sinks::console_sink(ledger_events_receiver, !opts_inner.notime_tick).await
+        sinks::console_sink(ledger_events_receiver, !opts_clone.notime_tick).await
     });
     let ledger_events_receiver = ledger_events_sender_original.subscribe();
     let state_clone = state.clone();
@@ -143,7 +166,14 @@ pub async fn main() {
         sinks::websocket_client_updater_sink(ledger_events_receiver, clients_clone).await
     });
     let server = warp::serve(filters::api(state.clone(), clients.clone()));
-    server.run(([127, 0, 0, 1], opts.listen_port)).await;
+
+    let (_, server) =
+        server.bind_with_graceful_shutdown(([127, 0, 0, 1], opts.listen_port), async move {
+            shutdown_rx.await.ok();
+        });
+    tokio::spawn(server)
+        .await
+        .expect("somehow failed spawning the server (oops)");
 }
 
 mod filters {
@@ -283,10 +313,13 @@ mod sinks {
                     }
                 }
                 Err(RecvError::Lagged(lagged_messages)) => {
-                    error!("console sink missed {} messages :(", lagged_messages)
+                    error!(
+                        "websocket client updater sink missed {} messages :(",
+                        lagged_messages
+                    )
                 }
                 Err(RecvError::Closed) => {
-                    panic!("somehow the console sink got a RecvError::Closed, this is a problem, bug sariya about it");
+                    error!("somehow the websocket client updater sink got a RecvError::Closed, this is a problem if it happened when not shutting down the game, bug sariya about it");
                 }
             }
         }
@@ -315,7 +348,7 @@ mod sinks {
                     error!("console sink missed {} messages :(", lagged_messages)
                 }
                 Err(RecvError::Closed) => {
-                    panic!("somehow the console sink got a RecvError::Closed, this is a problem, bug sariya about it");
+                    error!("somehow the console sink got a RecvError::Closed, this is a problem if it happened when not shutting down the game, bug sariya about it");
                 }
             }
         }
@@ -346,7 +379,7 @@ mod sinks {
                     error!("status updater sink missed {} messages :(", lagged_messages)
                 }
                 Err(RecvError::Closed) => {
-                    panic!("somehow the status updater sink got a RecvError::Closed, this is a problem, bug sariya about it");
+                    error!("somehow the status updater sink got a RecvError::Closed, this is a problem if it happened when not shutting down the game, bug sariya about it");
                 }
             }
         }
