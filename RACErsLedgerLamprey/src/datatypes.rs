@@ -1,16 +1,14 @@
 // Datatypes used in RACErs Ledger Extended Universe. Should generally be kept in sync with racers-ledger/DataTypes/DataTypes.cs.
-use serde::{Deserialize, Serialize};
 use chrono::prelude::*;
-use std::fmt;
 use colored::Colorize;
+use serde::{Deserialize, Serialize};
+use std::fmt;
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum SalvageEvent {
     #[serde(rename_all = "camelCase")]
-    WelcomeEvent {
-        msg: String,
-    },
+    WelcomeEvent { msg: String },
     #[serde(rename_all = "camelCase")]
     ShiftSalvageLogEntry {
         // Localized object name
@@ -49,7 +47,7 @@ pub enum SalvageEvent {
     #[serde(rename_all = "camelCase")]
     EndShiftEvent {
         // System time when shift ended
-        system_time: DateTime<Utc>
+        system_time: DateTime<Utc>,
     },
     #[serde(rename_all = "camelCase")]
     SetRACEInfoEvent {
@@ -65,7 +63,7 @@ pub enum SalvageEvent {
         // dev claimed salvage mass
         max_salvage_mass: i64,
         // System time when RACEInfo was queried
-        system_time: DateTime<Utc>
+        system_time: DateTime<Utc>,
     },
     #[serde(rename_all = "camelCase")]
     TimeTickEvent {
@@ -74,8 +72,8 @@ pub enum SalvageEvent {
         // the max length of the current shift
         max_time: f64,
         // System time when this Tick was registered
-        system_time: DateTime<Utc>
-    }
+        system_time: DateTime<Utc>,
+    },
 }
 
 // TODO(sariya) should this formatting be part of main.rs's loop instead of here? Right now we're doing coloring and all that fun stuff,
@@ -87,35 +85,90 @@ pub enum SalvageEvent {
 impl fmt::Display for SalvageEvent {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match &*self {
-            SalvageEvent::WelcomeEvent{msg} => {
+            SalvageEvent::WelcomeEvent { msg } => {
                 write!(f, "{}", msg)
-            },
-            SalvageEvent::ShiftSalvageLogEntry{object_name, mass, categories, salvaged_by, value, mass_based_value, destroyed, game_time, system_time} => {
-                write!(f, "{:.2} ({}) {}{}{} worth {} via {} (item categories: [{}])",
-                game_time, 
-                system_time.to_rfc3339_opts(SecondsFormat::Secs, true),
-                if *destroyed {"Destroyed ".red().bold()} else {"Salvaged ".green().bold()},
-                if *mass_based_value {format!("{} kg of ", mass)} else {"".into()},
+            }
+            SalvageEvent::ShiftSalvageLogEntry {
                 object_name,
-                value,
+                mass,
+                categories,
                 salvaged_by,
-                categories.join(",") // TODO(sariya) have some highlight override colors for these for common RACE categories???
-            )
-            },
-            SalvageEvent::GameStateChangedEvent{current_game_state, previous_game_state, system_time} => {
-                write!(f, "({}) game state changed from {} to {}", system_time.to_rfc3339_opts(SecondsFormat::Secs, true), previous_game_state, current_game_state)
-            },
-            SalvageEvent::StartShiftEvent{system_time} => {
-                write!(f, "({}) started new shift", system_time.to_rfc3339_opts(SecondsFormat::Secs, true))
-            },
-            SalvageEvent::EndShiftEvent{system_time} => {
-                write!(f, "({}) ended shift", system_time.to_rfc3339_opts(SecondsFormat::Secs, true))
-            },
-            SalvageEvent::SetRACEInfoEvent {seed, version, start_date_utc, max_total_value, max_salvage_mass, system_time} => {
+                value,
+                mass_based_value,
+                destroyed,
+                game_time,
+                system_time,
+            } => {
+                write!(
+                    f,
+                    "{:.2} ({}) {}{}{} worth {} via {} (item categories: [{}])",
+                    game_time,
+                    system_time.to_rfc3339_opts(SecondsFormat::Secs, true),
+                    if *destroyed {
+                        "Destroyed ".red().bold()
+                    } else {
+                        "Salvaged ".green().bold()
+                    },
+                    if *mass_based_value {
+                        format!("{} kg of ", mass)
+                    } else {
+                        "".into()
+                    },
+                    object_name,
+                    value,
+                    salvaged_by,
+                    categories.join(",") // TODO(sariya) have some highlight override colors for these for common RACE categories???
+                )
+            }
+            SalvageEvent::GameStateChangedEvent {
+                current_game_state,
+                previous_game_state,
+                system_time,
+            } => {
+                write!(
+                    f,
+                    "({}) game state changed from {} to {}",
+                    system_time.to_rfc3339_opts(SecondsFormat::Secs, true),
+                    previous_game_state,
+                    current_game_state
+                )
+            }
+            SalvageEvent::StartShiftEvent { system_time } => {
+                write!(
+                    f,
+                    "({}) started new shift",
+                    system_time.to_rfc3339_opts(SecondsFormat::Secs, true)
+                )
+            }
+            SalvageEvent::EndShiftEvent { system_time } => {
+                write!(
+                    f,
+                    "({}) ended shift",
+                    system_time.to_rfc3339_opts(SecondsFormat::Secs, true)
+                )
+            }
+            SalvageEvent::SetRACEInfoEvent {
+                seed,
+                version,
+                start_date_utc,
+                max_total_value,
+                max_salvage_mass,
+                system_time,
+            } => {
                 write!(f, "({}) current shift is a RACE: seed={} version={} start_date_utc={} max_total_value={} max_salvage_mass={}", system_time.to_rfc3339_opts(SecondsFormat::Secs, true), seed, version, start_date_utc, max_total_value, max_salvage_mass)
-            },
-            SalvageEvent::TimeTickEvent {current_time, max_time, system_time} => {
-                write!(f, "({}) registered time tick to {}s, shift will end at {}s", system_time.to_rfc3339_opts(SecondsFormat::Secs, true), current_time, max_time )
+            }
+            SalvageEvent::TimeTickEvent {
+                current_time,
+                max_time,
+                system_time,
+            } => {
+                write!(
+                    f,
+                    "({}) registered time tick to {}s, shift will end at {}s",
+                    system_time.to_rfc3339_opts(SecondsFormat::Secs, true),
+                    current_time,
+                    max_time
+                )
             }
         }
     }
