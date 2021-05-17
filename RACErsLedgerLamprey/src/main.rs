@@ -301,12 +301,15 @@ pub async fn main() {
         opts.connect_port, opts.listen_port
     );
 
+    // State we'll need to share with our components later.
     let clients = Clients::default();
     let state = State::default();
 
+    // Single-use channel specifically for shutting down gracefully.
     let (shutdown_tx, shutdown_rx) = oneshot::channel();
 
-    // Kick off the mod<->lamprey WS connection! We should call this "mod websocket" for consistency...
+    // Kick off the mod<->lamprey WS connection!
+    // (when referring to this connection, we should call this "mod websocket" for consistency...)
     let (ledger_events_sender_original, _) = broadcast::channel(512);
     let opts_clone = Arc::clone(&opts);
     let ledger_events_sender = ledger_events_sender_original.clone();
