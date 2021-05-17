@@ -240,13 +240,13 @@ mod sinks {
             match recv_result {
                 Ok(salvage_event) => match salvage_event {
                     SalvageEvent::TimeTickEvent { .. } => {
-                        trace!("decoded {:#?}", salvage_event);
+                        trace!("received {:#?}", salvage_event);
                         if log_time_tick {
                             println!("{}", salvage_event)
                         }
                     }
                     salvage_event => {
-                        trace!("decoded {:#?}", salvage_event);
+                        trace!("received {:#?}", salvage_event);
                         println!("{}", salvage_event)
                     }
                 },
@@ -298,15 +298,6 @@ mod sinks {
 #[tokio::main]
 pub async fn main() {
     let opts = Arc::new(Opts::parse());
-    // SimpleLogger::new()
-    //     .with_level(match opts.verbose {
-    //         0 => LevelFilter::Error,
-    //         1 => LevelFilter::Info,
-    //         2 => LevelFilter::Debug,
-    //         3 | _ => LevelFilter::Trace,
-    //     })
-    //     .init()
-    //     .unwrap();
     let max_level = match opts.verbose {
         0 => Level::ERROR,
         1 => Level::INFO,
@@ -338,6 +329,7 @@ pub async fn main() {
         "pretty_and_all_spans" => {
             tracing_subscriber::fmt()
                 .with_max_level(max_level)
+                .with_thread_ids(true)
                 .with_thread_names(true)
                 .with_span_events(FmtSpan::FULL)
                 .pretty()
