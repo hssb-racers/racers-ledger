@@ -1,20 +1,17 @@
 mod datatypes;
-use std::{collections::HashMap, sync::Arc};
 
 pub use crate::datatypes::*;
 
-use log::{info, trace, LevelFilter};
-use simple_logger::SimpleLogger;
-
-use tokio::sync::{broadcast, mpsc, oneshot, RwLock};
-//use std::thread::spawn;
 use async_tungstenite::{tokio::connect_async, tungstenite::Message};
+use clap::{AppSettings, Clap};
 use futures::prelude::*;
+use log::{info, trace, LevelFilter};
 use serde::Serialize;
+use simple_logger::SimpleLogger;
+use std::{collections::HashMap, sync::Arc};
+use tokio::sync::{broadcast, mpsc, oneshot, RwLock};
 use url::Url;
 extern crate colored;
-
-use clap::{AppSettings, Clap};
 
 #[derive(Clap)]
 #[clap(version = "0.2", author = "Sariya Melody <sariya@sariya.garden>")]
@@ -41,11 +38,19 @@ struct Opts {
 /// Value is a handle to send things to that client.
 pub type Clients =
     Arc<RwLock<HashMap<usize, mpsc::UnboundedSender<Result<warp::ws::Message, warp::Error>>>>>;
+
+/// Data about the current state-of-the-world. Right now it's just if we're in shift or not. Maybe more eventually.
 #[derive(Default, Serialize)]
 pub struct LedgerState {
     in_shift: bool,
 }
+/// Utility type for what we're actually going to be passing around.
 pub type State = Arc<RwLock<LedgerState>>;
+
+/// `filters` is all about Warp routing and how we set it up.
+/// API endpoints:
+/// - /api/v0/status: Emits the data described in `LedgerState`
+/// - /api/v0/racers-ledger-proxy: Websocket endpoint. All data the Lamprey gets from the mod is echoed here.
 
 mod filters {
     use std::convert::Infallible;
@@ -54,6 +59,8 @@ mod filters {
     use super::Clients;
     use super::State;
     use warp::Filter;
+
+    /// Describes the entire API we're exporting.
     pub fn api(
         state: State,
         clients: Clients,
@@ -61,6 +68,8 @@ mod filters {
         warp::path("api")
             .and(warp::path("v0").and(status(state.clone()).or(ledger_proxy(clients.clone()))))
     }
+
+    /// route /api/v0/status
     pub fn status(
         state: State,
     ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
@@ -71,6 +80,7 @@ mod filters {
             .and_then(handlers::handle_status)
     }
 
+    /// route /api/v0/racers-ledger-proxy
     pub fn ledger_proxy(
         clients: Clients,
     ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
@@ -84,9 +94,12 @@ mod filters {
             })
     }
 
+    /// Warp filter for adding in a State
     fn with_state(state: State) -> impl Filter<Extract = (State,), Error = Infallible> + Clone {
         warp::any().map(move || state.clone())
     }
+
+    /// Warp filter for adding in a Clients
     fn with_clients(
         clients: Clients,
     ) -> impl Filter<Extract = (Clients,), Error = Infallible> + Clone {
@@ -94,6 +107,7 @@ mod filters {
     }
 }
 
+/// `handlers` is all about responding to connections that were routed to us via `filters`.
 mod handlers {
     use std::{
         convert::Infallible,
@@ -112,6 +126,7 @@ mod handlers {
     /// global unique user id counter, key for Clients
     static NEXT_USER_ID: AtomicUsize = AtomicUsize::new(1);
 
+    /// When websocket clients connect, stick 'em in Clients.
     pub async fn handle_websocket_ledger_proxy_connected(websocket: WebSocket, clients: Clients) {
         let my_id = NEXT_USER_ID.fetch_add(1, Ordering::Relaxed);
         let (user_ws_tx, mut user_ws_rx) = websocket.split();
@@ -136,17 +151,21 @@ mod handlers {
         handle_websocket_ledger_proxy_disconnected(my_id, &clients).await;
     }
 
-    pub async fn handle_websocket_ledger_proxy_disconnected(my_id: usize, clients: &Clients) {
+    /// Internal helper function for its `connected` counterpart.
+    async fn handle_websocket_ledger_proxy_disconnected(my_id: usize, clients: &Clients) {
         info!("disconnecting websocket user {}", my_id);
         clients.write().await.remove(&my_id);
     }
 
+    /// When clients query for status via the API, here's how it gets to them.
     pub async fn handle_status(state: State) -> Result<impl warp::Reply, Infallible> {
         let state = state.read().await;
         Ok(warp::reply::json(&*state))
     }
 }
 
+/// `sinks` is all of the long-running internal "helper processes" that keep an eye on what's happening in the
+/// `ledger_events_receiver` broadcast channel and help accordingly.
 mod sinks {
     use super::Clients;
     use super::State;
@@ -157,6 +176,7 @@ mod sinks {
 
     use crate::SalvageEvent;
 
+    /// Handles actually telling our proxy clients about ledger event updates.
     pub async fn websocket_client_updater_sink(
         mut ledger_events_receiver: Receiver<SalvageEvent>,
         clients: Clients,
@@ -196,6 +216,7 @@ mod sinks {
         }
     }
 
+    /// Log to the console!
     pub async fn console_sink(
         mut ledger_events_receiver: Receiver<SalvageEvent>,
         log_time_tick: bool,
@@ -224,6 +245,8 @@ mod sinks {
             }
         }
     }
+
+    /// Update the `State` struct so that clients asking for it later can have the most up-to-date state!
     pub async fn state_updater_sink(
         mut ledger_events_receiver: Receiver<SalvageEvent>,
         state: State,
@@ -314,7 +337,7 @@ pub async fn main() {
                     let event: Result<SalvageEvent, serde_json::Error> =
                         serde_json::from_str(string.as_str());
                     if let Ok(salvage_event) = event {
-                        // if we ever make the console sink optional this unwrap isn't guaranteed to work so we'll
+                        // if we ever make ALL of the sinks optional this unwrap isn't guaranteed to work so we'll
                         // need to implement some kind of retry logic maybe
                         ledger_events_sender.send(salvage_event).unwrap();
                     }
@@ -367,7 +390,6 @@ pub async fn main() {
     });
 
     // Spawn a state updater sink to keep abreast of when the game state changes
-    // (this state is currently only used in `/api/v0/status`)
     let ledger_events_receiver = ledger_events_sender_original.subscribe();
     let state_clone = state.clone();
     tokio::spawn(
