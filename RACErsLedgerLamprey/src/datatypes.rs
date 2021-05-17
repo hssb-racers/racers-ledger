@@ -83,7 +83,7 @@ pub enum SalvageEvent {
 // Also: the question of if this application or another one that's a client of this one is the correct place to put log sinks is an open question, still, so I'm not
 // married to any change in particular.
 impl fmt::Display for SalvageEvent {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &*self {
             SalvageEvent::WelcomeEvent { msg } => {
                 write!(f, "{}", msg)

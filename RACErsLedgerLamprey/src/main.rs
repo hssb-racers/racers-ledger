@@ -4,6 +4,7 @@ pub use crate::datatypes::*;
 
 use async_tungstenite::{tokio::connect_async, tungstenite::Message};
 use clap::{AppSettings, Clap};
+use colored;
 use futures::prelude::*;
 use log::{info, trace, LevelFilter};
 use serde::Serialize;
@@ -11,7 +12,6 @@ use simple_logger::SimpleLogger;
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::{broadcast, mpsc, oneshot, RwLock};
 use url::Url;
-extern crate colored;
 
 #[derive(Clap)]
 #[clap(version = "0.2", author = "Sariya Melody <sariya@sariya.garden>")]
