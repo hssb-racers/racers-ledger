@@ -6,11 +6,11 @@ use async_tungstenite::{tokio::connect_async, tungstenite::Message};
 use clap::{AppSettings, Clap};
 use colored;
 use futures::prelude::*;
-use log::{info, trace, LevelFilter};
 use serde::Serialize;
-use simple_logger::SimpleLogger;
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::{broadcast, mpsc, oneshot, RwLock};
+use tracing::{info, trace, Level};
+use tracing_subscriber::fmt::format::FmtSpan;
 use url::Url;
 
 #[derive(Clap)]
@@ -24,6 +24,10 @@ struct Opts {
     /// Level of logging verbosity. No -v = Error only, -v = Info, -vv = Debug, -vvv = Trace.
     #[clap(short, long, parse(from_occurrences))]
     verbose: i32,
+    /// Pick your favorite log format. Options: full (default), compact, pretty, pretty_and_all_spans (warning: noisy)
+    // TODO(sariya) make this an enum somehow lol
+    #[clap(long, default_value = "full")]
+    log_format: String,
     /// Disable colored output.
     #[clap(long)]
     nocolorize: bool,
@@ -40,7 +44,7 @@ pub type Clients =
     Arc<RwLock<HashMap<usize, mpsc::UnboundedSender<Result<warp::ws::Message, warp::Error>>>>>;
 
 /// Data about the current state-of-the-world. Right now it's just if we're in shift or not. Maybe more eventually.
-#[derive(Default, Serialize)]
+#[derive(Default, Serialize, Debug)]
 pub struct LedgerState {
     in_shift: bool,
 }
@@ -61,6 +65,7 @@ mod filters {
     use warp::Filter;
 
     /// Describes the entire API we're exporting.
+    #[tracing::instrument]
     pub fn api(
         state: State,
         clients: Clients,
@@ -70,6 +75,7 @@ mod filters {
     }
 
     /// route /api/v0/status
+    #[tracing::instrument]
     pub fn status(
         state: State,
     ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
@@ -81,6 +87,7 @@ mod filters {
     }
 
     /// route /api/v0/racers-ledger-proxy
+    #[tracing::instrument]
     pub fn ledger_proxy(
         clients: Clients,
     ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
@@ -95,11 +102,13 @@ mod filters {
     }
 
     /// Warp filter for adding in a State
+    #[tracing::instrument]
     fn with_state(state: State) -> impl Filter<Extract = (State,), Error = Infallible> + Clone {
         warp::any().map(move || state.clone())
     }
 
     /// Warp filter for adding in a Clients
+    #[tracing::instrument]
     fn with_clients(
         clients: Clients,
     ) -> impl Filter<Extract = (Clients,), Error = Infallible> + Clone {
@@ -127,6 +136,7 @@ mod handlers {
     static NEXT_USER_ID: AtomicUsize = AtomicUsize::new(1);
 
     /// When websocket clients connect, stick 'em in Clients.
+    #[tracing::instrument]
     pub async fn handle_websocket_ledger_proxy_connected(websocket: WebSocket, clients: Clients) {
         let my_id = NEXT_USER_ID.fetch_add(1, Ordering::Relaxed);
         let (user_ws_tx, mut user_ws_rx) = websocket.split();
@@ -152,12 +162,14 @@ mod handlers {
     }
 
     /// Internal helper function for its `connected` counterpart.
+    #[tracing::instrument]
     async fn handle_websocket_ledger_proxy_disconnected(my_id: usize, clients: &Clients) {
         info!("disconnecting websocket user {}", my_id);
         clients.write().await.remove(&my_id);
     }
 
     /// When clients query for status via the API, here's how it gets to them.
+    #[tracing::instrument]
     pub async fn handle_status(state: State) -> Result<impl warp::Reply, Infallible> {
         let state = state.read().await;
         Ok(warp::reply::json(&*state))
@@ -177,6 +189,7 @@ mod sinks {
     use crate::SalvageEvent;
 
     /// Handles actually telling our proxy clients about ledger event updates.
+    #[tracing::instrument]
     pub async fn websocket_client_updater_sink(
         mut ledger_events_receiver: Receiver<SalvageEvent>,
         clients: Clients,
@@ -217,6 +230,7 @@ mod sinks {
     }
 
     /// Log to the console!
+    #[tracing::instrument]
     pub async fn console_sink(
         mut ledger_events_receiver: Receiver<SalvageEvent>,
         log_time_tick: bool,
@@ -247,6 +261,7 @@ mod sinks {
     }
 
     /// Update the `State` struct so that clients asking for it later can have the most up-to-date state!
+    #[tracing::instrument]
     pub async fn state_updater_sink(
         mut ledger_events_receiver: Receiver<SalvageEvent>,
         state: State,
@@ -283,15 +298,56 @@ mod sinks {
 #[tokio::main]
 pub async fn main() {
     let opts = Arc::new(Opts::parse());
-    SimpleLogger::new()
-        .with_level(match opts.verbose {
-            0 => LevelFilter::Error,
-            1 => LevelFilter::Info,
-            2 => LevelFilter::Debug,
-            3 | _ => LevelFilter::Trace,
-        })
-        .init()
-        .unwrap();
+    // SimpleLogger::new()
+    //     .with_level(match opts.verbose {
+    //         0 => LevelFilter::Error,
+    //         1 => LevelFilter::Info,
+    //         2 => LevelFilter::Debug,
+    //         3 | _ => LevelFilter::Trace,
+    //     })
+    //     .init()
+    //     .unwrap();
+    let max_level = match opts.verbose {
+        0 => Level::ERROR,
+        1 => Level::INFO,
+        2 => Level::DEBUG,
+        3 | _ => Level::TRACE,
+    };
+    // TODO(sariya) this could probably stand to be better but i don't really care right this second
+    match opts.log_format.to_lowercase().as_str() {
+        "full" => {
+            tracing_subscriber::fmt()
+                .with_max_level(max_level)
+                .with_thread_names(true)
+                .init();
+        }
+        "compact" => {
+            tracing_subscriber::fmt()
+                .with_max_level(max_level)
+                .with_thread_names(true)
+                .compact()
+                .init();
+        }
+        "pretty" => {
+            tracing_subscriber::fmt()
+                .with_max_level(max_level)
+                .with_thread_names(true)
+                .pretty()
+                .init();
+        }
+        "pretty_and_all_spans" => {
+            tracing_subscriber::fmt()
+                .with_max_level(max_level)
+                .with_thread_names(true)
+                .with_span_events(FmtSpan::FULL)
+                .pretty()
+                .init();
+        }
+        _ => {
+            panic!("you gave an invalid logging format and now i must die");
+        }
+    };
+
     if opts.nocolorize {
         colored::control::set_override(false);
     }
