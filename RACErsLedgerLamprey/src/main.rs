@@ -47,135 +47,6 @@ pub struct LedgerState {
 }
 pub type State = Arc<RwLock<LedgerState>>;
 
-#[tokio::main]
-pub async fn main() {
-    let opts = Arc::new(Opts::parse());
-    SimpleLogger::new()
-        .with_level(match opts.verbose {
-            0 => LevelFilter::Error,
-            1 => LevelFilter::Info,
-            2 => LevelFilter::Debug,
-            3 | _ => LevelFilter::Trace,
-        })
-        .init()
-        .unwrap();
-    if opts.nocolorize {
-        colored::control::set_override(false);
-    }
-    info!("starting up server");
-    info!(
-        "connect port: {}, listen port: {}",
-        opts.connect_port, opts.listen_port
-    );
-
-    let clients = Clients::default();
-    let state = State::default();
-
-    let (shutdown_tx, shutdown_rx) = oneshot::channel();
-
-    // Kick off the mod<->lamprey WS connection! We should call this "mod websocket" for consistency...
-    let (ledger_events_sender_original, _) = broadcast::channel(512);
-    let opts_clone = Arc::clone(&opts);
-    let ledger_events_sender = ledger_events_sender_original.clone();
-    let clients_clone = clients.clone();
-    tokio::spawn(async move {
-        let connect_destination =
-            format!("ws://localhost:{}/racers-ledger/", opts_clone.connect_port);
-        let (websocketstream, response) =
-            connect_async(Url::parse(connect_destination.as_str()).unwrap())
-                .await
-                .expect(format!("Can't connect to {}", connect_destination).as_str());
-        info!("connected to server");
-        info!("response code: {}", response.status());
-        let (_, mut websocket_rx) = websocketstream.split();
-        loop {
-            let msg = websocket_rx.next().await;
-            if msg.is_none() {
-                continue;
-            };
-            let msg = msg
-                .unwrap()
-                .expect("ran into an error with the message somehow i guess");
-
-            trace!("received message {}", msg);
-            match msg {
-                Message::Text(string) => {
-                    trace!("trying to convert msg to object...");
-                    let event: Result<SalvageEvent, serde_json::Error> =
-                        serde_json::from_str(string.as_str());
-                    if let Ok(salvage_event) = event {
-                        // if we ever make the console sink optional this unwrap isn't guaranteed to work so we'll
-                        // need to implement some kind of retry logic maybe
-                        ledger_events_sender.send(salvage_event).unwrap();
-                    }
-                }
-                Message::Ping(data) => {
-                    trace!("received ping! (data: {:?})", data);
-                }
-                Message::Pong(data) => {
-                    trace!("received pong! (data: {:?}", data);
-                }
-                Message::Binary(data) => {
-                    trace!("received binary data: {:?}", data)
-                }
-                Message::Close(close_frame) => {
-                    trace!("received close!");
-                    // default code 1000 "normal closure"
-                    // see https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent for meanings of codes
-                    let code = 1000_u16;
-                    let reason = "game closed! (probably)";
-                    if let Some(close_frame) = close_frame {
-                        // TODO(sariya) pass down the code/reason to consumers?
-                        trace!("close frame info: {:#?}", close_frame);
-                    }
-
-                    // server died, let's clean up and tell our clients and die too
-                    // TODO(sariya) this should probably be in the updater sink, but it
-                    // unfortunately needs info to data (the message::close frame)
-                    for (_, tx) in clients_clone.read().await.iter() {
-                        if let Err(_disconnected) =
-                            tx.send(Ok(warp::ws::Message::close_with(code, reason)))
-                        {
-                            // the tx is disconnected and already gone
-                        }
-                    }
-                    // let's get the webserver shut down too, now!
-                    shutdown_tx
-                        .send(())
-                        .expect("somehow failed sending the shutdown signal lmao");
-                    break;
-                }
-            }
-        }
-    });
-    // Spawn a console sink to log when we get new ledger events
-    let opts_clone = Arc::clone(&opts);
-    let ledger_events_receiver = ledger_events_sender_original.subscribe();
-    tokio::spawn(async move {
-        sinks::console_sink(ledger_events_receiver, !opts_clone.notime_tick).await
-    });
-    let ledger_events_receiver = ledger_events_sender_original.subscribe();
-    let state_clone = state.clone();
-    tokio::spawn(
-        async move { sinks::state_updater_sink(ledger_events_receiver, state_clone).await },
-    );
-
-    let ledger_events_receiver = ledger_events_sender_original.subscribe();
-    let clients_clone = clients.clone();
-    tokio::spawn(async move {
-        sinks::websocket_client_updater_sink(ledger_events_receiver, clients_clone).await
-    });
-    let server = warp::serve(filters::api(state.clone(), clients.clone()));
-
-    let (_, server) =
-        server.bind_with_graceful_shutdown(([127, 0, 0, 1], opts.listen_port), async move {
-            shutdown_rx.await.ok();
-        });
-    tokio::spawn(server)
-        .await
-        .expect("somehow failed spawning the server (oops)");
-}
-
 mod filters {
     use std::convert::Infallible;
 
@@ -384,4 +255,139 @@ mod sinks {
             }
         }
     }
+}
+
+#[tokio::main]
+pub async fn main() {
+    let opts = Arc::new(Opts::parse());
+    SimpleLogger::new()
+        .with_level(match opts.verbose {
+            0 => LevelFilter::Error,
+            1 => LevelFilter::Info,
+            2 => LevelFilter::Debug,
+            3 | _ => LevelFilter::Trace,
+        })
+        .init()
+        .unwrap();
+    if opts.nocolorize {
+        colored::control::set_override(false);
+    }
+    info!("starting up server");
+    info!(
+        "connect port: {}, listen port: {}",
+        opts.connect_port, opts.listen_port
+    );
+
+    let clients = Clients::default();
+    let state = State::default();
+
+    let (shutdown_tx, shutdown_rx) = oneshot::channel();
+
+    // Kick off the mod<->lamprey WS connection! We should call this "mod websocket" for consistency...
+    let (ledger_events_sender_original, _) = broadcast::channel(512);
+    let opts_clone = Arc::clone(&opts);
+    let ledger_events_sender = ledger_events_sender_original.clone();
+    let clients_clone = clients.clone();
+    tokio::spawn(async move {
+        let connect_destination =
+            format!("ws://localhost:{}/racers-ledger/", opts_clone.connect_port);
+        let (websocketstream, response) =
+            connect_async(Url::parse(connect_destination.as_str()).unwrap())
+                .await
+                .expect(format!("Can't connect to {}", connect_destination).as_str());
+        info!("connected to server");
+        info!("response code: {}", response.status());
+        let (_, mut websocket_rx) = websocketstream.split();
+        loop {
+            let msg = websocket_rx.next().await;
+            if msg.is_none() {
+                continue;
+            };
+            let msg = msg
+                .unwrap()
+                .expect("ran into an error with the message somehow i guess");
+
+            trace!("received message {}", msg);
+            match msg {
+                Message::Text(string) => {
+                    trace!("trying to convert msg to object...");
+                    let event: Result<SalvageEvent, serde_json::Error> =
+                        serde_json::from_str(string.as_str());
+                    if let Ok(salvage_event) = event {
+                        // if we ever make the console sink optional this unwrap isn't guaranteed to work so we'll
+                        // need to implement some kind of retry logic maybe
+                        ledger_events_sender.send(salvage_event).unwrap();
+                    }
+                }
+                Message::Ping(data) => {
+                    trace!("received ping! (data: {:?})", data);
+                }
+                Message::Pong(data) => {
+                    trace!("received pong! (data: {:?}", data);
+                }
+                Message::Binary(data) => {
+                    trace!("received binary data: {:?}", data)
+                }
+                Message::Close(close_frame) => {
+                    trace!("received close!");
+                    // default code 1000 "normal closure"
+                    // see https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent for meanings of codes
+                    let code = 1000_u16;
+                    let reason = "game closed! (probably)";
+                    if let Some(close_frame) = close_frame {
+                        // TODO(sariya) pass down the code/reason to consumers?
+                        trace!("close frame info: {:#?}", close_frame);
+                    }
+
+                    // server died, let's clean up and tell our clients and die too
+                    // TODO(sariya) this should probably be in the updater sink, but it
+                    // unfortunately needs info to data (the message::close frame)
+                    for (_, tx) in clients_clone.read().await.iter() {
+                        if let Err(_disconnected) =
+                            tx.send(Ok(warp::ws::Message::close_with(code, reason)))
+                        {
+                            // the tx is disconnected and already gone
+                        }
+                    }
+                    // let's get the webserver shut down too, now!
+                    shutdown_tx
+                        .send(())
+                        .expect("somehow failed sending the shutdown signal lmao");
+                    break;
+                }
+            }
+        }
+    });
+
+    // Spawn a console sink to log when we get new ledger events
+    let opts_clone = Arc::clone(&opts);
+    let ledger_events_receiver = ledger_events_sender_original.subscribe();
+    tokio::spawn(async move {
+        sinks::console_sink(ledger_events_receiver, !opts_clone.notime_tick).await
+    });
+
+    // Spawn a state updater sink to keep abreast of when the game state changes
+    // (this state is currently only used in `/api/v0/status`)
+    let ledger_events_receiver = ledger_events_sender_original.subscribe();
+    let state_clone = state.clone();
+    tokio::spawn(
+        async move { sinks::state_updater_sink(ledger_events_receiver, state_clone).await },
+    );
+
+    // Spawn a sink for sending all of our proxy clients the ledger events!
+    let ledger_events_receiver = ledger_events_sender_original.subscribe();
+    let clients_clone = clients.clone();
+    tokio::spawn(async move {
+        sinks::websocket_client_updater_sink(ledger_events_receiver, clients_clone).await
+    });
+
+    // let's actually serve our API to the world (or, at least localhost) now!
+    let server = warp::serve(filters::api(state.clone(), clients.clone()));
+    let (_, server) =
+        server.bind_with_graceful_shutdown(([127, 0, 0, 1], opts.listen_port), async move {
+            shutdown_rx.await.ok();
+        });
+    tokio::spawn(server)
+        .await
+        .expect("somehow failed spawning the server (oops)");
 }
