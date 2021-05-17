@@ -30,6 +30,15 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'release_bundle|AnyCPU'">
+    <OutputPath>bin\release_bundle\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony">
       <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Hardspace Shipbreaker\BepInEx\core\0Harmony.dll</HintPath>
@@ -111,4 +120,15 @@
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>if $(ConfigurationName) == release_bundle (
+    mkdir "$(TargetDir)RACErsLedger"
+    cargo build --manifest-path "$(SolutionDir)RACErsLedgerLamprey\Cargo.toml" --release
+    copy "$(SolutionDir)RACErsLedgerLamprey\target\release\racers_ledger_lamprey.exe" "$(TargetDir)RACErsLedger\racers_ledger_lamprey.exe"
+    copy "$(TargetDir)RACErsLedger.dll" "$(TargetDir)RACErsLedger\RACErsLedger.dll"
+    copy "$(TargetDir)websocket-sharp.dll" "$(TargetDir)RACErsLedger\websocket-sharp.dll"
+    tar -a -c -f "RACErsLedgerRelease.zip" "RACErsLedger"
+    rd /S /Q "$(TargetDir)RACErsLedger"
+)</PostBuildEvent>
+  </PropertyGroup>
 </Project>
