@@ -129,6 +129,7 @@
     copy "$(TargetDir)websocket-sharp.dll" "$(TargetDir)RACErsLedger\websocket-sharp.dll"
     tar -a -c -f "RACErsLedgerRelease.zip" "RACErsLedger"
     rd /S /Q "$(TargetDir)RACErsLedger"
+    explorer.exe .
 )</PostBuildEvent>
   </PropertyGroup>
 </Project>
