@@ -123,8 +123,9 @@
   <PropertyGroup>
     <PostBuildEvent Condition="$(ConfigurationName)==release_bundle">
       mkdir "$(TargetDir)RACErsLedger"
+      del /f "$(TargetDir)RACErsLedgerRelease.zip"
       cargo build --manifest-path "$(SolutionDir)RACErsLedgerLamprey\Cargo.toml" --release
-      copy "$(SolutionDir)RACErsLedgerLamprey\target\release\racers_ledger_lamprey.exe" "$(TargetDir)RACErsLedger\racers_ledger_lamprey.exe"
+      copy "$(SolutionDir)RACErsLedgerLamprey\target\release\racers-ledger-lamprey.exe" "$(TargetDir)RACErsLedger\racers-ledger-lamprey.exe"
       copy "$(TargetDir)RACErsLedger.dll" "$(TargetDir)RACErsLedger\RACErsLedger.dll"
       copy "$(TargetDir)websocket-sharp.dll" "$(TargetDir)RACErsLedger\websocket-sharp.dll"
       tar -a -c -f "RACErsLedgerRelease.zip" "RACErsLedger"

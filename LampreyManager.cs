@@ -59,7 +59,7 @@ namespace RACErsLedger
             Plugin.Log(LogLevel.Message, $"listening on ws://127.0.0.1:{_server.Port}/racers-ledger/");
             try
             {
-                _lampreyProcess = Process.Start(Path.Combine(Paths.PluginPath, "RACErsLedger", "racers_ledger_lamprey.exe"), $"{_websocketListenPort} {_lampreyListenPort}");
+                _lampreyProcess = Process.Start(Path.Combine(Paths.PluginPath, "RACErsLedger", "racers-ledger-lamprey.exe"), $"{_websocketListenPort} {_lampreyListenPort}");
             } catch (Exception e)
             {
                 Plugin.Log(LogLevel.Error, $"failed to launch lamprey! {e}");

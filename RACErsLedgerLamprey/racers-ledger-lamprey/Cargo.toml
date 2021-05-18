@@ -1,5 +1,5 @@
 [package]
-name = "racers_ledger_lamprey"
+name = "racers-ledger-lamprey"
 version = "0.1.0"
 authors = ["Sariya Melody <sariya@sariya.garden>"]
 edition = "2018"
