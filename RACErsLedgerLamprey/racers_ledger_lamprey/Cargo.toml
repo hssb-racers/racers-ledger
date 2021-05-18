@@ -3,6 +3,7 @@ name = "racers_ledger_lamprey"
 version = "0.1.0"
 authors = ["Sariya Melody <sariya@sariya.garden>"]
 edition = "2018"
+repository = "https://git.sariya.dev/sariya/racers-ledger"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
