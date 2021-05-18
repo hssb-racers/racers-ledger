@@ -21,13 +21,13 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: racers_ledger_lamprey-linux
-          path: RACErsLedgerLamprey/target/release/racers_ledger_lamprey
+          path: RACErsLedgerLamprey/target/release/racers-ledger-lamprey
       - name: Push binary to Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/v')
         with:
           files: |
-            RACErsLedgerLamprey/target/release/racers_ledger_lamprey
+            RACErsLedgerLamprey/target/release/racers-ledger-lamprey
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
@@ -51,13 +51,13 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: racers_ledger_lamprey-windows
-          path: RACErsLedgerLamprey/target/x86_64-pc-windows-msvc/release/racers_ledger_lamprey.exe
+          path: RACErsLedgerLamprey/target/x86_64-pc-windows-msvc/release/racers-ledger-lamprey.exe
       - name: Push binary to Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/v')
         with:
           files: |
-            RACErsLedgerLamprey/target/x86_64-pc-windows-msvc/release/racers_ledger_lamprey.exe
+            RACErsLedgerLamprey/target/x86_64-pc-windows-msvc/release/racers-ledger-lamprey.exe
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
