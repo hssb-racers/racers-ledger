@@ -218,14 +218,14 @@ jobs:
         run: cp artifacts/plugin/*/*/* artifacts/linux/* ZIP/Linux
 
       - name: zip Windows
-        uses: thedoctor0/zip-release@master
+        uses: thedoctor0/zip-release@0.4.1
         with:
           filename: 'RACErsLedger-Windows.zip'
           path: ZIP/Windows
           type: zip
 
       - name: tar Linux
-        uses: thedoctor0/zip-release@master
+        uses: thedoctor0/zip-release@0.4.1
         with:
           filename: 'RACErsLedger-Linux.tar'
           path: ZIP/Linux
