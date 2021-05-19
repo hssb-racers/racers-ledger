@@ -181,6 +181,9 @@ jobs:
           name: racers_ledger_lamprey-linux
           path: artifacts/linux
 
+      - name: make linux binary executable
+        run: chmod +x artifacts/linux/racers-ledger-lamprey
+
       - uses: actions/download-artifact@v2
         with:
           name: racers_ledger_lamprey-windows
