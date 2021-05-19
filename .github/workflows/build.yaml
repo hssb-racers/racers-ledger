@@ -34,13 +34,18 @@ jobs:
       with:
         files: |
           obj/Debug/RACErsLedger.dll
+          bin/Debug/websocket-sharp.dll
       env:
         GITHUB_TOKEN: ${{ github.token }}
 
     - name: Push DLL to workflow artifacts
       uses: actions/upload-artifact@v2
       with:
-        path: obj/Debug/RACErsLedger.dll
+        name: plugin
+        path: |
+          obj/Debug/RACErsLedger.dll
+          bin/Debug/websocket-sharp.dll
+
 
   build-lamprey-linux:
     name: Build Lamprey for Linux
