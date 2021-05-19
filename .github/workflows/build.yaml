@@ -178,6 +178,34 @@ jobs:
           name: racers_ledger_lamprey-windows
           path: artifacts/windows
 
+      - name: make root folder for .zip
+        run: mkdir -p ZIP/Windows ZIP/Linux
+
+      - name: copy Windows files to the right place
+        run: cp artifacts/plugin/*/*/* artifacts/windows/* ZIP/Windows
+
+      - name: copy Linux files to the right place
+        run: cp artifacts/plugin/*/*/* artifacts/linux/* ZIP/Linux
+
+      - name: zip Windows
+        uses: thedoctor0/zip-release@master
+        with:
+          filename: 'RACErsLedger-Windows.zip'
+          path: ZIP/Windows
+          type: zip
+
+      - name: tar Linux
+        uses: thedoctor0/zip-release@master
+        with:
+          filename: 'RACErsLedger-Linux.tar'
+          path: ZIP/Linux
+          type: tar
+
       - name: Display structure of downloaded files
-        run: ls -R
-        working-directory: artifacts
+        run: ls -Rl artifacts ZIP *.zip
+
+      - name: extract .zips as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIPs
+          path: '*.zip'
