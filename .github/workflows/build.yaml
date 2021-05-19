@@ -42,6 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
       - name: Cargo Cache
         uses: actions/cache@v1
         with:
@@ -50,26 +51,31 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
             ${{ runner.os }}-cargo
+
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: nightly
           override: true
+
       - uses: actions-rs/cargo@v1
         with:
           command: build
           args: --manifest-path RACErsLedgerLamprey/Cargo.toml --release
+
       - name: extract built binary
         uses: actions/upload-artifact@v2
         with:
           name: racers_ledger_lamprey-linux
           path: RACErsLedgerLamprey/target/release/racers-ledger-lamprey
 
+
   build-lamprey-windows:
     name: Build Lamprey for Windows
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
+
       - name: Cargo Cache
         uses: actions/cache@v1
         with:
@@ -78,17 +84,20 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
             ${{ runner.os }}-cargo
+
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: nightly
           target: x86_64-pc-windows-msvc
           override: true
+
       - uses: actions-rs/cargo@v1
         with:
           use-cross: true
           command: build
           args: --manifest-path RACErsLedgerLamprey/Cargo.toml --target x86_64-pc-windows-msvc --release
+
       - name: extract built binary
         uses: actions/upload-artifact@v2
         with:
@@ -96,36 +105,44 @@ jobs:
           path: RACErsLedgerLamprey/target/x86_64-pc-windows-msvc/release/racers-ledger-lamprey.exe
 
 
+
   test-lamprey:
     name: Test Suite
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: nightly
           override: true
+
       - uses: actions-rs/cargo@v1
         with:
           command: test
           args: --manifest-path RACErsLedgerLamprey/Cargo.toml
+
 
   fmt-lamprey:
     name: Rustfmt
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: nightly
           override: true
+
       - run: rustup component add rustfmt
+
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
           args: --manifest-path RACErsLedgerLamprey/Cargo.toml --all -- --check
+
 
   clippy-lamprey:
     name: Clippy
@@ -142,6 +159,7 @@ jobs:
         with:
           command: clippy
           args: --manifest-path RACErsLedgerLamprey/Cargo.toml -- -D warnings
+
 
   package:
     name: Package everything
