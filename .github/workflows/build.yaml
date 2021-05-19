@@ -218,11 +218,12 @@ jobs:
       - name: Display the results of the zipping
         run: ls -Rl ZIP *.zip *.tar
 
-      - name: extract .zips as artifact
+      - name: extract .zip/.tar as artifact
         uses: actions/upload-artifact@v2
         with:
-          name: ZIPs
-          path: '*.zip'
+          name: ReleaseZipballs
+          path: '*.zip *.tar'
+
 
       - name: Push Windows ZIP to Release
         uses: softprops/action-gh-release@v1
