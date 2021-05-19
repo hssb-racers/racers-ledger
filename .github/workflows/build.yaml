@@ -46,7 +46,9 @@ jobs:
       - name: Cargo Cache
         uses: actions/cache@v1
         with:
-          path: ~/.cargo
+          path: |
+            ~/.cargo
+            RACErsLedgerLamprey/target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
@@ -79,7 +81,9 @@ jobs:
       - name: Cargo Cache
         uses: actions/cache@v1
         with:
-          path: ~/.cargo
+          path: |
+            ~/.cargo
+            RACErsLedgerLamprey/target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
@@ -153,7 +157,9 @@ jobs:
       - name: Cargo Cache
         uses: actions/cache@v1
         with:
-          path: ~/.cargo
+          path: |
+            ~/.cargo
+            RACErsLedgerLamprey/target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}-${{ hashFiles('**/Cargo.lock') }}-clippy
           restore-keys: |
             ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
