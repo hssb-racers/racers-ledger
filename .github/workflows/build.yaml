@@ -1,27 +1,70 @@
 on: [push, pull_request]
 
-name: build lamprey
+name: Build
 
 jobs:
-  build-linux:
-    name: Build for Linux
+  build-plugin:
+    name: Build RACErsLedger.dll
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      name: checkout main repository
+
+    - uses: actions/checkout@v2
+      name: checkout dependency DLLs
+      with:
+        ssh-key: '${{ secrets.DLLSSH }}'
+        repository: hssb-racers/dlls
+        path: DLLs
+
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    - uses: nuget/setup-nuget@v1
+
+    - run: nuget restore
+
+    - name: Build
+      run: msbuild
+
+    - name: Push DLL to Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/v')
+      with:
+        files: |
+          obj/Debug/RACErsLedger.dll
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - name: Push DLL to workflow artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        path: obj/Debug/RACErsLedger.dll
+
+  build-lamprey-linux:
+    name: Build Lamprey for Linux
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: nightly
           override: true
+
       - uses: actions-rs/cargo@v1
         with:
           command: build
           args: --manifest-path RACErsLedgerLamprey/Cargo.toml --release
+
       - name: extract built binary
         uses: actions/upload-artifact@v2
         with:
           name: racers_ledger_lamprey-linux
           path: RACErsLedgerLamprey/target/release/racers-ledger-lamprey
+
       - name: Push binary to Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/v')
@@ -31,27 +74,31 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
-  build-windows:
-    name: Build for Windows
+  build-lamprey-windows:
+    name: Build Lamprey for Windows
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
+
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: nightly
           target: x86_64-pc-windows-msvc
           override: true
+
       - uses: actions-rs/cargo@v1
         with:
           use-cross: true
           command: build
           args: --manifest-path RACErsLedgerLamprey/Cargo.toml --target x86_64-pc-windows-msvc --release
+
       - name: extract built binary
         uses: actions/upload-artifact@v2
         with:
           name: racers_ledger_lamprey-windows
           path: RACErsLedgerLamprey/target/x86_64-pc-windows-msvc/release/racers-ledger-lamprey.exe
+
       - name: Push binary to Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/v')
@@ -62,49 +109,71 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
 
 
-  test:
+
+  test-lamprey:
     name: Test Suite
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: nightly
           override: true
+
       - uses: actions-rs/cargo@v1
         with:
           command: test
           args: --manifest-path RACErsLedgerLamprey/Cargo.toml
 
-  fmt:
+
+  fmt-lamprey:
     name: Rustfmt
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: nightly
           override: true
+
       - run: rustup component add rustfmt
+
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
           args: --manifest-path RACErsLedgerLamprey/Cargo.toml --all -- --check
 
-  clippy:
+
+  clippy-lamprey:
     name: Clippy
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: nightly
           override: true
+
       - run: rustup component add clippy
+
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
           args: --manifest-path RACErsLedgerLamprey/Cargo.toml -- -D warnings
+
+
+  package:
+    name: Package everything
+    runs-on: ubuntu-latest
+    needs:
+      - build-plugin
+      - build-lamprey-linux
+      - build-lamprey-windows
+    steps:
+      - uses: actions/checkout@v2
