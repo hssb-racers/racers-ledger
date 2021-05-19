@@ -28,16 +28,6 @@ jobs:
     - name: Build
       run: msbuild
 
-    - name: Push DLL to Release
-      uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/v')
-      with:
-        files: |
-          obj/Debug/RACErsLedger.dll
-          bin/Debug/websocket-sharp.dll
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-
     - name: Push DLL to workflow artifacts
       uses: actions/upload-artifact@v2
       with:
@@ -81,14 +71,6 @@ jobs:
           name: racers_ledger_lamprey-linux
           path: RACErsLedgerLamprey/target/release/racers-ledger-lamprey
 
-      - name: Push binary to Release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/v')
-        with:
-          files: |
-            RACErsLedgerLamprey/target/release/racers-ledger-lamprey
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
 
   build-lamprey-windows:
     name: Build Lamprey for Windows
@@ -125,15 +107,6 @@ jobs:
         with:
           name: racers_ledger_lamprey-windows
           path: RACErsLedgerLamprey/target/x86_64-pc-windows-msvc/release/racers-ledger-lamprey.exe
-
-      - name: Push binary to Release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/v')
-        with:
-          files: |
-            RACErsLedgerLamprey/target/x86_64-pc-windows-msvc/release/racers-ledger-lamprey.exe
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
 
 
 
@@ -266,3 +239,21 @@ jobs:
           path: |
             *.zip
             *.tar.gz
+
+      - name: Push Windows ZIP to Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          files: |
+            RACErsLedger-Windows.zip
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Push Linux ZIP to Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          files: |
+            RACErsLedger-Linux.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
