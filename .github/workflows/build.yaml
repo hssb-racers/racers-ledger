@@ -189,6 +189,9 @@ jobs:
           name: racers_ledger_lamprey-windows
           path: artifacts/windows
 
+      - name: Display structure of downloaded files
+        run: ls -Rl artifacts
+
       - name: make root folder for .zip
         run: mkdir -p ZIP/Windows ZIP/Linux
 
@@ -212,8 +215,8 @@ jobs:
           path: ZIP/Linux
           type: tar
 
-      - name: Display structure of downloaded files
-        run: ls -Rl artifacts ZIP *.zip
+      - name: Display the results of the zipping
+        run: ls -Rl ZIP *.zip *.tar
 
       - name: extract .zips as artifact
         uses: actions/upload-artifact@v2
