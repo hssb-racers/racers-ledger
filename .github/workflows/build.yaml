@@ -232,5 +232,37 @@ jobs:
           path: artifacts/windows
 
       - name: Display structure of downloaded files
-        run: ls -R
-        working-directory: artifacts
+        run: ls -Rl artifacts
+
+      - name: make root folder for .zip
+        run: mkdir -p RACErsLedger
+
+      - name: copy files to the right place
+        run: cp artifacts/plugin/*/*/* artifacts/windows/* artifacts/linux/* RACErsLedger/
+
+      - name: zip Windows
+        uses: klaernie/zip-release@master
+        with:
+          filename: 'RACErsLedger-Windows.zip'
+          path: RACErsLedger
+          type: zip
+          exclusions: RACErsLedger/racers-ledger-lamprey
+
+      - name: tar Linux
+        uses: klaernie/zip-release@master
+        with:
+          filename: 'RACErsLedger-Linux.tar.gz'
+          path: RACErsLedger
+          type: tar
+          exclusions: racers-ledger-lamprey.exe
+
+      - name: Display the results of the zipping
+        run: ls -Rl RACErsLedger *.zip *.tar.gz
+
+      - name: extract .zip/.tar as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ReleaseZipballs
+          path: |
+            *.zip
+            *.tar.gz
