@@ -162,3 +162,22 @@ jobs:
       - build-lamprey-windows
     steps:
       - uses: actions/checkout@v2
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: plugin
+          path: artifacts/plugin
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: racers_ledger_lamprey-linux
+          path: artifacts/linux
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: racers_ledger_lamprey-windows
+          path: artifacts/windows
+
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: artifacts
