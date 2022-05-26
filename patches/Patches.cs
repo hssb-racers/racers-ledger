@@ -38,33 +38,36 @@ namespace RACErsLedger.Patches
         {
             try
             {
-                var timer = World.DefaultGameObjectInjectionWorld.EntityManager.GetComponentData<GameSessionTimerData>(GameSession.CurrentSessionEntity);
-                Plugin.Log(LogLevel.Debug, $"@{timer.CurrentTime} received SalvageableChangedEvent {{ state:{ev.State}, entity:{ev.SalvagedEntity}," +
+                GameSessionTimerData timer;
+                if (World.DefaultGameObjectInjectionWorld.EntityManager.TryGetSingletonComponent(out timer))
+                {
+                    Plugin.Log(LogLevel.Debug, $"@{timer.CurrentTime} received SalvageableChangedEvent {{ state:{ev.State}, entity:{ev.SalvagedEntity}," +
                     $" SalvageableInfo:{{ SalvageableComponent:{ev.SalvageableInfo.SalvageableComponent}, MassAtTimeOfProcessing:{ev.SalvageableInfo.MassAtTimeOfProcessing}, ObjectName(Localized):{Utilities.Localize(ev.SalvageableInfo.ObjectName)}, " +
                     $"ObjectCategories:[{string.Join(",", from category in ev.SalvageableInfo.ObjectCategories select Utilities.Localize(category.CategoryName))}]," +
-                    $" Rewards:[{string.Join(",", from reward in ev.SalvageableInfo.Rewards select $"{{c:{reward.CurrencyAssetID}, v:{reward.ValueAtTimeOfProcessing}, mbv:{reward.MassBasedValue}, oibv:{reward.ObjectIntegrityBasedValue}}}")}], QualityWhenSalvaged:{ev.SalvageableInfo.QualityWhenSalvaged}, " +
+                    $" Rewards:[{string.Join(",", from reward in ev.SalvageableInfo.Rewards select $"{{c:{reward.CurrencyAssetID}, v:{reward.ValueAtTimeOfProcessing}, mbv:{reward.MassBasedValue}}}")}], QualityWhenSalvaged:{ev.SalvageableInfo.QualityWhenSalvaged}, " +
                     $"SalvagedBy:{ev.SalvageableInfo.SalvagedBy}}}, Mass:{ev.Mass}, ObjectName(Localized):{Utilities.Localize(ev.ObjectName)}, Categories:[{string.Join(",", from category in ev.Categories select Utilities.Localize(category.CategoryName))}]," +
                     $" IsSellOff:{ev.IsSellOff}, Scrapped:{ev.Scrapped}, SalvagedBy:{ev.SalvagedBy}, CommandBuffer:{ev.CommandBuffer} }}");
 
-                string objectName = Utilities.Localize(ev.SalvageableInfo.ObjectName);
-                float mass = ev.SalvageableInfo.MassAtTimeOfProcessing;
-                string[] categories = (from category in ev.SalvageableInfo.ObjectCategories select Utilities.Localize(category.CategoryName)).ToArray();
-                string salvagedBy = ev.SalvageableInfo.SalvagedBy.ToString();
-                // assume that we only have one reward value and that it's always the dollars. maybe risky, not sure. debug logs will help me with this if it's ever a problem i guess!
-                float value = 0;
-                bool massBasedValue = true;
-                // sometimes there's a fun bug where there's 0 rewards and i think that was causing the event processing to throw an error and retry.
-                // let's just log that as 0.
-                // though, if we don't get any rewards, perhaps we should just ignore it instead of logging it to the ledger?
-                if (ev.SalvageableInfo.Rewards.Count > 0)
-                {
-                    value = ev.SalvageableInfo.Rewards[0].ValueAtTimeOfProcessing;
-                    massBasedValue = ev.SalvageableInfo.Rewards[0].MassBasedValue;
-                }
-                bool destroyed = (ev.State == SalvageableChangedEvent.SalvageableState.Destroyed);
-                float gameTime = timer.TimerCountsUp ? (float)timer.CurrentTime : timer.MaxTime - timer.CurrentTime;
+                    string objectName = Utilities.Localize(ev.SalvageableInfo.ObjectName);
+                    float mass = ev.SalvageableInfo.MassAtTimeOfProcessing;
+                    string[] categories = (from category in ev.SalvageableInfo.ObjectCategories select Utilities.Localize(category.CategoryName)).ToArray();
+                    string salvagedBy = ev.SalvageableInfo.SalvagedBy.ToString();
+                    // assume that we only have one reward value and that it's always the dollars. maybe risky, not sure. debug logs will help me with this if it's ever a problem i guess!
+                    float value = 0;
+                    bool massBasedValue = true;
+                    // sometimes there's a fun bug where there's 0 rewards and i think that was causing the event processing to throw an error and retry.
+                    // let's just log that as 0.
+                    // though, if we don't get any rewards, perhaps we should just ignore it instead of logging it to the ledger?
+                    if (ev.SalvageableInfo.Rewards.Count > 0)
+                    {
+                        value = ev.SalvageableInfo.Rewards[0].ValueAtTimeOfProcessing;
+                        massBasedValue = ev.SalvageableInfo.Rewards[0].MassBasedValue;
+                    }
+                    bool destroyed = (ev.State == SalvageableChangedEvent.SalvageableState.Destroyed);
+                    float gameTime = timer.TimerCountsUp ? (float)timer.CurrentTime : timer.MaxTime - timer.CurrentTime;
 
-                Plugin.StateManager.CurrentShift.AddSalvage(objectName, mass, categories, salvagedBy, value, massBasedValue, destroyed, gameTime);
+                    Plugin.StateManager.CurrentShift.AddSalvage(objectName, mass, categories, salvagedBy, value, massBasedValue, destroyed, gameTime);
+                }
             }
             catch (Exception e) { Plugin.Log(LogLevel.Error, e.ToString()); }
         }
@@ -77,7 +80,7 @@ namespace RACErsLedger.Patches
                     Plugin.LampreyManager.SendEvent(new RACErsLedger.DataTypes.GameStateChangedEvent(ev.GameState, ev.PrevGameState));
                 }
                 Plugin.Log(LogLevel.Debug, $"received GameStateChangedEvent {{ GameState:{ev.GameState}, PrevGameState:{ev.PrevGameState} }}");
-                if (ev.GameState == GameSession.GameState.Gameplay && (ev.PrevGameState == GameSession.GameState.Splash || ev.PrevGameState == GameSession.GameState.Loading))
+                if (ev.GameState == GameSession.GameState.Gameplay && (ev.PrevGameState == GameSession.GameState.LoadingInProgress || ev.PrevGameState == GameSession.GameState.LoadingComplete))
                 {
                     // looks like this is the start of a new shift!
                     Plugin.Log(LogLevel.Info, "looks like there's a new shift running, starting a new shift log");
@@ -87,8 +90,7 @@ namespace RACErsLedger.Patches
                         Plugin.Log(LogLevel.Debug, "looks like we're in RACE, let's grab some info about it");
                         var weeklyShipResult = LynxOnlineService.Instance.WeeklyShip.GetRecentWeeklyShip();
                         var shipPreview = LynxOnlineService.Instance.WeeklyShip.GetRecentWeeklyShipPreview();
-                        var maxSalvageableValue = PlaystreamService.Instance.GetShipValue(shipPreview);
-                        shift.SetRACEInfo(weeklyShipResult.Seed, weeklyShipResult.Version, weeklyShipResult.StartDateUTC, (int) maxSalvageableValue, (int) shipPreview.Mass);
+                        shift.SetRACEInfo(weeklyShipResult.Seed, weeklyShipResult.Version, weeklyShipResult.StartDateUTC, (int) shipPreview.TotalCreditValue, (int) shipPreview.Mass);
                     }
                 }
                 if (

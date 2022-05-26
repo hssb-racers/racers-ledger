@@ -66,8 +66,8 @@ namespace RACErsLedger.DataTypes
                     return "none";
                 case  BBI.Unity.Game.GameSession.GameState.Gameplay:
                     return "gameplay";
-                case  BBI.Unity.Game.GameSession.GameState.Splash:
-                    return "splash";
+                case  BBI.Unity.Game.GameSession.GameState.LoadingInProgress:
+                    return "loadinginprogress";
                 case  BBI.Unity.Game.GameSession.GameState.GameOver:
                     return "gameover";
                 case  BBI.Unity.Game.GameSession.GameState.GameComplete:
@@ -80,8 +80,8 @@ namespace RACErsLedger.DataTypes
                     return "nis";
                 case  BBI.Unity.Game.GameSession.GameState.Hab:
                     return "hab";
-                case  BBI.Unity.Game.GameSession.GameState.Loading:
-                    return "loading";
+                case  BBI.Unity.Game.GameSession.GameState.LoadingComplete:
+                    return "loadingcomplete";
                 default:
                     return "unknown state";
             }
