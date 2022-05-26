@@ -93,24 +93,26 @@ namespace RACErsLedger.Patches
                         shift.SetRACEInfo(weeklyShipResult.Seed, weeklyShipResult.Version, weeklyShipResult.StartDateUTC, (int) shipPreview.TotalCreditValue, (int) shipPreview.Mass);
                     }
                 }
+                // GameComplete -> LoadingInProgress
+                // or Gameplay/Paused -> LoadingInProgress
                 if (
-                    ev.GameState == GameSession.GameState.GameComplete /* Shift Summary screen */ ||
-                    ev.GameState == GameSession.GameState.None /* Esc -> Quit in RACE (maybe mark as abandoned specifically somewhere?) */
+                    (ev.PrevGameState == GameSession.GameState.GameComplete && ev.GameState == GameSession.GameState.LoadingInProgress)  /* Shift Summary screen */ ||
+                    (ev.PrevGameState == GameSession.GameState.Paused && ev.GameState == GameSession.GameState.LoadingInProgress) /* Esc -> Abandon Shift */
                     )
                 {
                     // looks like the end of the shift! 
 
                     string ExitCause;
-                    switch (ev.GameState)
+                    switch (ev.PrevGameState)
                     {
                         case GameSession.GameState.GameComplete:
                             ExitCause = "complete";
                             break;
-                        case GameSession.GameState.None:
+                        case GameSession.GameState.Paused:
                             ExitCause = "abort";
                             break;
                         default:
-                            ExitCause = "unknown (" + ev.GameState + ")";
+                            ExitCause = "unknown (" + ev.PrevGameState + " -> " + ev.GameState + ")";
                             break;
                     }
 
