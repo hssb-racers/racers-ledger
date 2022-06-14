@@ -35,6 +35,7 @@ namespace RACErsLedger
     {
         private readonly int _lampreyListenPort;
         private readonly int _websocketListenPort;
+        private readonly bool _lampreyListenOnAllInterfaces;
         private Process _lampreyProcess;
         [CanBeNull] private WebSocketServer _server;
         private static readonly JsonSerializerSettings JsonSerializerSettings = new JsonSerializerSettings
@@ -45,10 +46,11 @@ namespace RACErsLedger
             },
         };
 
-        public LampreyManager(Int32 websocketListenPort, Int32 lampreyListenPort)
+        public LampreyManager(Int32 websocketListenPort, Int32 lampreyListenPort, Boolean lampreyListenOnAllInterfaces)
         {
             _websocketListenPort = websocketListenPort;
             _lampreyListenPort = lampreyListenPort;
+            _lampreyListenOnAllInterfaces = lampreyListenOnAllInterfaces;
         }
 
         internal void Start()
@@ -56,10 +58,11 @@ namespace RACErsLedger
             _server = new WebSocketServer(IPAddress.Loopback, _websocketListenPort);
             _server.AddWebSocketService<EventBroadcastServer>("/racers-ledger/");
             _server.Start();
-            Plugin.Log(LogLevel.Message, $"listening on ws://127.0.0.1:{_server.Port}/racers-ledger/");
+            Plugin.Log(LogLevel.Message, $"listening on ws://{(_lampreyListenOnAllInterfaces ? "127.0.0.1" : "0.0.0.0")}:{_server.Port}/racers-ledger/");
             try
             {
-                _lampreyProcess = Process.Start(Path.Combine(Paths.PluginPath, "RACErsLedger", "racers-ledger-lamprey.exe"), $"{_websocketListenPort} {_lampreyListenPort}");
+                var exposeLampreyFlag = _lampreyListenOnAllInterfaces ? "--expose" : "";
+                _lampreyProcess = Process.Start(Path.Combine(Paths.PluginPath, "RACErsLedger", "racers-ledger-lamprey.exe"), $"{_websocketListenPort} {_lampreyListenPort} {_lampreyListenOnAllInterfaces}");
             } catch (Exception e)
             {
                 Plugin.Log(LogLevel.Error, $"failed to launch lamprey! {e}");

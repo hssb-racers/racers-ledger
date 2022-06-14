@@ -22,6 +22,9 @@ struct Opts {
     /// Level of logging verbosity. No -v = Error only, -v = Info, -vv = Debug, -vvv = Trace.
     #[clap(short, long, parse(from_occurrences))]
     verbose: i32,
+    /// Expose lamprey API on 0.0.0.0 instead of 127.0.0.1?
+    #[clap(long)]
+    expose: bool,
     /// Pick your favorite log format. Options: full (default), compact, pretty, pretty_and_all_spans (warning: noisy)
     // TODO(sariya) make this an enum somehow lol
     #[clap(long, default_value = "full")]
@@ -343,8 +346,10 @@ pub async fn main() {
     }
     info!("starting up server");
     info!(
-        "connect port: {}, listen port: {}",
-        opts.connect_port, opts.listen_port
+        "connect port: {}, listen port: {}, listen address: {}",
+        opts.connect_port,
+        opts.listen_port,
+        (if opts.expose { "0.0.0.0" } else { "127.0.0.1" })
     );
 
     // State we'll need to share with our components later.
@@ -454,8 +459,13 @@ pub async fn main() {
 
     // let's actually serve our API to the world (or, at least localhost) now!
     let server = warp::serve(filters::api(state.clone(), clients.clone()));
+    let bind_address = if opts.expose {
+        [0, 0, 0, 0]
+    } else {
+        [127, 0, 0, 1]
+    };
     let (_, server) =
-        server.bind_with_graceful_shutdown(([127, 0, 0, 1], opts.listen_port), async move {
+        server.bind_with_graceful_shutdown((bind_address, opts.listen_port), async move {
             shutdown_rx.await.ok();
         });
     tokio::spawn(server)
