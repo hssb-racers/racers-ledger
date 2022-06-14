@@ -58,11 +58,12 @@ namespace RACErsLedger
             _server = new WebSocketServer(IPAddress.Loopback, _websocketListenPort);
             _server.AddWebSocketService<EventBroadcastServer>("/racers-ledger/");
             _server.Start();
-            Plugin.Log(LogLevel.Message, $"listening on ws://{(_lampreyListenOnAllInterfaces ? "127.0.0.1" : "0.0.0.0")}:{_server.Port}/racers-ledger/");
+            var listenAddress = _lampreyListenOnAllInterfaces ? "127.0.0.1" : "0.0.0.0";
+            Plugin.Log(LogLevel.Message, $"listening on ws://{listenAddress}:{_server.Port}/racers-ledger/");
             try
             {
                 var exposeLampreyFlag = _lampreyListenOnAllInterfaces ? "--expose" : "";
-                _lampreyProcess = Process.Start(Path.Combine(Paths.PluginPath, "RACErsLedger", "racers-ledger-lamprey.exe"), $"{_websocketListenPort} {_lampreyListenPort} {_lampreyListenOnAllInterfaces}");
+                _lampreyProcess = Process.Start(Path.Combine(Paths.PluginPath, "RACErsLedger", "racers-ledger-lamprey.exe"), $"{_websocketListenPort} {_lampreyListenPort} {exposeLampreyFlag}");
             } catch (Exception e)
             {
                 Plugin.Log(LogLevel.Error, $"failed to launch lamprey! {e}");
