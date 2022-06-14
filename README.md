@@ -23,7 +23,6 @@ This mod (click [here or on the Releases tab](https://git.sariya.dev/sariya/race
 ## Installation
 
 # Windows
-
 Extract BepInEx to the root Hardspace Shipbreaker folder so `winhttp.dll` is in the same folder as `Shipbreaker.exe`.
 
 Extract the `.zip` you downloaded. Drag the entire `RACErsLedger` plugin folder into `Hardspace Shipbreaker\BepInEx\plugins\RACErsLedger` -- the folder should stay together. 
@@ -64,6 +63,7 @@ Config options:
 | `UseLamprey` | Enable [sidecar process](https://git.sariya.dev/sariya/racers-ledger/src/branch/main/RACErsLedgerLamprey/README.md) for streaming events to interested clients (i.e. live data visualizers) | true |
 | `LampreyListenPort` | (Advanced users only) What port does the lamprey process listen on? | 42069 |
 | `WebsocketListenPort` | (Advanced users only) What port does the mod serve a stream of salvage data on? | 32325 |
+| `LampreyBindToAllInterfaces` | (Advanced users only) Does the Lamprey bind to 127.0.0.1 (false) or 0.0.0.0 (true)? | false |
 
 ## Updating
 
