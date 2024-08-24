@@ -1,5 +1,6 @@
 on:
-  - push
+  - push:
+    - main
   - pull_request
   - dispatch
 
