@@ -9,7 +9,6 @@ use std::{collections::HashMap, sync::Arc};
 use tokio::sync::{broadcast, mpsc, oneshot, RwLock};
 use tracing::{info, trace, Level};
 use tracing_subscriber::fmt::format::FmtSpan;
-use url::Url;
 
 #[derive(Clap)]
 #[clap(version = "0.2", author = "Sariya Melody <sariya@sariya.garden>")]
@@ -369,7 +368,7 @@ pub async fn main() {
         let connect_destination =
             format!("ws://localhost:{}/racers-ledger/", opts_clone.connect_port);
         let (websocketstream, response) =
-            connect_async(Url::parse(connect_destination.as_str()).unwrap())
+            connect_async(connect_destination.as_str())
                 .await
                 .expect(format!("Can't connect to {}", connect_destination).as_str());
         info!("connected to server");
@@ -431,6 +430,9 @@ pub async fn main() {
                         .send(())
                         .expect("somehow failed sending the shutdown signal lmao");
                     break;
+                }
+                Message::Frame(data) => {
+                    trace!("I have no idea what happened now -- klaernie. Got data: {:?}", data)
                 }
             }
         }
