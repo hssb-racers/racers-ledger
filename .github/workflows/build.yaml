@@ -59,6 +59,10 @@ jobs:
             ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
             ${{ runner.os }}-cargo
 
+      - name: install openssl-dev for crate openssl-sys
+        # see https://docs.rs/openssl/latest/openssl/#automatic for the recommendation on which packages are needed
+        run: sudo apt-get install pkg-config libssl-dev
+
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
