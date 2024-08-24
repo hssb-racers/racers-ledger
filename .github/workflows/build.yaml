@@ -1,8 +1,8 @@
 on:
-  - push:
+  push:
     - main
-  - pull_request
-  - dispatch
+  pull_request:
+  dispatch:
 
 name: Build
 
