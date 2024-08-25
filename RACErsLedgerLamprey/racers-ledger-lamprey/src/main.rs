@@ -367,10 +367,9 @@ pub async fn main() {
     tokio::spawn(async move {
         let connect_destination =
             format!("ws://localhost:{}/racers-ledger/", opts_clone.connect_port);
-        let (websocketstream, response) =
-            connect_async(connect_destination.as_str())
-                .await
-                .expect(format!("Can't connect to {}", connect_destination).as_str());
+        let (websocketstream, response) = connect_async(connect_destination.as_str())
+            .await
+            .expect(format!("Can't connect to {}", connect_destination).as_str());
         info!("connected to server");
         info!("response code: {}", response.status());
         let (_, mut websocket_rx) = websocketstream.split();
@@ -432,7 +431,10 @@ pub async fn main() {
                     break;
                 }
                 Message::Frame(data) => {
-                    trace!("I have no idea what happened now -- klaernie. Got data: {:?}", data)
+                    trace!(
+                        "I have no idea what happened now -- klaernie. Got data: {:?}",
+                        data
+                    )
                 }
             }
         }
