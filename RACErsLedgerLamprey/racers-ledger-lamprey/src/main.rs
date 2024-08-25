@@ -1,7 +1,7 @@
 use racers_ledger_datatypes::*;
 
 use async_tungstenite::{tokio::connect_async, tungstenite::Message};
-use clap::{AppSettings, Clap};
+use clap::Parser;
 use futures::prelude::*;
 use serde::Serialize;
 use std::{collections::HashMap, sync::Arc};
@@ -9,16 +9,15 @@ use tokio::sync::{broadcast, mpsc, oneshot, RwLock};
 use tracing::{info, trace, Level};
 use tracing_subscriber::fmt::format::FmtSpan;
 
-#[derive(Clap)]
+#[derive(Parser)]
 #[clap(version = "0.2", author = "Sariya Melody <sariya@sariya.garden>")]
-#[clap(setting = AppSettings::ColoredHelp)]
 struct Opts {
     /// Port for lamprey to connect to and echo events from
     connect_port: u16,
     /// Port for lamprey to listen on for subclients (i.e. visualizers, other plugins, etc)
     listen_port: u16,
     /// Level of logging verbosity. No -v = Error only, -v = Info, -vv = Debug, -vvv = Trace.
-    #[clap(short, long, parse(from_occurrences))]
+    #[clap(short, long, action = clap::ArgAction::Count)]
     verbose: i32,
     /// Expose lamprey API on 0.0.0.0 instead of 127.0.0.1?
     #[clap(long)]
