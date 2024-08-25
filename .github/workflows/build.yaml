@@ -33,7 +33,7 @@ jobs:
     - name: Build
       run: msbuild
 
-    - name: Push DLL to workflow artifacts
+    - name: Push DLL to workflow artifacts
       uses: actions/upload-artifact@v4
       with:
         name: plugin
@@ -58,10 +58,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
             ${{ runner.os }}-cargo
-
-      - name: install openssl-dev for crate openssl-sys
-        # see https://docs.rs/openssl/latest/openssl/#automatic for the recommendation on which packages are needed
-        run: sudo apt-get install pkg-config libssl-dev
 
       - uses: actions-rs/toolchain@v1
         with:

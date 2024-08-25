@@ -84,7 +84,7 @@ pub enum SalvageEvent {
 // married to any change in particular.
 impl fmt::Display for SalvageEvent {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match &*self {
+        match self {
             SalvageEvent::WelcomeEvent { msg } => {
                 write!(f, "{}", msg)
             }
