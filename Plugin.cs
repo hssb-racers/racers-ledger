@@ -8,7 +8,7 @@ using System.IO;
 
 namespace RACErsLedger
 {
-    [BepInPlugin(UUID, "RACErs Ledger", "1.7.0.0")]
+    [BepInPlugin(UUID, "RACErs Ledger", "1.8.0.0")]
     [BepInProcess("Shipbreaker.exe")]
     public class Plugin : BaseUnityPlugin
     {
