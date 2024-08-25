@@ -33,7 +33,7 @@ jobs:
     - name: Build
       run: msbuild
 
-    - name: Push DLL to workflow artifacts
+    - name: Push DLL to workflow artifacts
       uses: actions/upload-artifact@v4
       with:
         name: plugin
