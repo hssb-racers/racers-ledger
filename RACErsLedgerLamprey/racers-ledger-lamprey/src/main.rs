@@ -2,7 +2,6 @@ use racers_ledger_datatypes::*;
 
 use async_tungstenite::{tokio::connect_async, tungstenite::Message};
 use clap::{AppSettings, Clap};
-use colored;
 use futures::prelude::*;
 use serde::Serialize;
 use std::{collections::HashMap, sync::Arc};
@@ -155,7 +154,10 @@ mod handlers {
                     error!("websocket error (uid={}): {}", my_id, e);
                     break;
                 }
-                _ => {}
+                _ => {
+                    // successfull responses from the downstream clients are ignored, since
+                    // we do can not know what they are trying to tell us
+                }
             };
         }
         handle_websocket_ledger_proxy_disconnected(my_id, &clients).await;
@@ -273,13 +275,13 @@ mod sinks {
                     SalvageEvent::StartShiftEvent { .. } => {
                         debug!("startshift event received, updating state");
                         let mut state = state.write().await;
-                        (*state).in_shift = true;
+                        state.in_shift = true;
                         debug!("startshift event done updating state");
                     }
                     SalvageEvent::EndShiftEvent { .. } => {
                         debug!("endshift event received, updating state");
                         let mut state = state.write().await;
-                        (*state).in_shift = false;
+                        state.in_shift = false;
                         debug!("endshift event done updating state");
                     }
                     _ => {}
@@ -302,7 +304,8 @@ pub async fn main() {
         0 => Level::ERROR,
         1 => Level::INFO,
         2 => Level::DEBUG,
-        3 | _ => Level::TRACE,
+        3 => Level::TRACE,
+        _ => Level::TRACE,
     };
     // TODO(sariya) this could probably stand to be better but i don't really care right this second
     match opts.log_format.to_lowercase().as_str() {
@@ -369,7 +372,7 @@ pub async fn main() {
             format!("ws://localhost:{}/racers-ledger/", opts_clone.connect_port);
         let (websocketstream, response) = connect_async(connect_destination.as_str())
             .await
-            .expect(format!("Can't connect to {}", connect_destination).as_str());
+            .unwrap_or_else(|_| panic!("Can't connect to {}", connect_destination));
         info!("connected to server");
         info!("response code: {}", response.status());
         let (_, mut websocket_rx) = websocketstream.split();
