@@ -21,6 +21,7 @@ jobs:
       with:
         ssh-key: '${{ secrets.DLLSSH }}'
         repository: hssb-racers/dlls
+        ref: main
         path: DLLs
 
     - name: Add msbuild to PATH
