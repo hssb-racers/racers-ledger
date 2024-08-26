@@ -18,7 +18,7 @@ struct Opts {
     listen_port: u16,
     /// Level of logging verbosity. No -v = Error only, -v = Info, -vv = Debug, -vvv = Trace.
     #[clap(short, long, action = clap::ArgAction::Count)]
-    verbose: i32,
+    verbose: u8,
     /// Expose lamprey API on 0.0.0.0 instead of 127.0.0.1?
     #[clap(long)]
     expose: bool,
