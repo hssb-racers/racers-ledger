@@ -1,6 +1,6 @@
 ﻿# RACErs Ledger
 
-RACErs Ledger -- a mod for Hardspace: Shipbreaker to save salvage data in real time to enable visualization and analysis of salvaging strategies!
+[RACErs Ledger](https://github.com/hssb-racers/racers-ledger) -- a mod for Hardspace: Shipbreaker to save salvage data in real time to enable visualization and analysis of salvaging strategies!
 
 Right now it can:
  - Save shift summaries (time started, ended, duration, value you salvaged, value you destroyed, probably more in the future!) after every shift!
@@ -18,7 +18,7 @@ Hardspace Shipbreaker.
 
 BepInEx: https://github.com/BepInEx/BepInEx/releases (You want the x64 .zip.)
 
-This mod (click [here or on the Releases tab](https://git.sariya.dev/sariya/racers-ledger/releases) and download the `.zip` file of the latest release)
+This mod (click [here or on the Releases tab](https://github.com/hssb-racers/racers-ledger/releases/latest) and download the `.zip` file for your operating system )
 
 ## Installation
 
@@ -67,7 +67,7 @@ Config options:
 
 ## Updating
 
-To update to a new RACErs Ledger version, navigate to [the releases tab](https://git.sariya.dev/sariya/racers-ledger/releases), download the `.zip` from the latest release, and drag the entire folder into your BepInEx plugins path, overwriting any conflicts.
+To update to a new RACErs Ledger version, navigate to [the latest release](https://github.com/hssb-racers/racers-ledger/releases/latest), download the `.zip` and drag the entire folder into your BepInEx plugins path (like you did during installation), overwriting any conflicts.
 If Hardspace: Shipbreaker is already running, you will need to close it to be able to overwrite the file.
 
 ## Un-installation
