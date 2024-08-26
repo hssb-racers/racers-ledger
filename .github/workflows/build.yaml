@@ -19,7 +19,7 @@ jobs:
     - uses: actions/checkout@v4
       name: checkout dependency DLLs
       with:
-        ssh-key: '${{ secrets.DLLSSH }}'
+        token: '${{ secrets.FINE_TOKEN_HSSB_RACERS_DLLS_READ_CONTENTS }}'
         repository: hssb-racers/dlls
         ref: main
         path: DLLs
