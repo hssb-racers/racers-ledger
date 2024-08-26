@@ -80,10 +80,9 @@ Or just remove the `RACErsLedger` folder from the plugins folder.
 
 This mod is provided on an AS-IS basis, with no implied warranty or guarantee that it will work at all. It might fuck up, it might accidentally delete your save, it might destroy spacetime, it might punch you in the face. 
 
-It probably won't do any of those things, since I test every release myself before giving it to anyone else, but it might, and you should be prepared for that harsh reality. Back up your saves, etc.
+It probably won't do any of those things, since we test every release myself before giving it to anyone else, but it might, and you should be prepared for that harsh reality. Back up your saves, etc.
 
-If the mod doesn't work in some way, ping me on the HSSB Discord in `#modding-discussion` or something. Feature requests can go there too. I might not want to deal with the thing, or might not be able to deal with it, but I'll 
-definitely at least read your plight ;)
+If the mod doesn't work in some way, ping me on the HSSB Discord in `#modding-discussion` or something. Also feel free to open issues or pull requests directly in [GitHub](https://github.com/hssb-racers/racers-ledger). We might not want to deal with the thing, or might not be able to deal with it, but we'll definitely at least read your plight ;)
 
 ## Credits
 
