@@ -223,7 +223,7 @@ jobs:
         run: mkdir -p RACErsLedger
 
       - name: copy files to the right place
-        run: cp artifacts/plugin/*/*/* artifacts/windows/* artifacts/linux/* RACErsLedger/
+        run: cp README.md artifacts/plugin/*/*/* artifacts/windows/* artifacts/linux/* RACErsLedger/
 
       - name: zip Windows
         uses: klaernie/zip-release@master
