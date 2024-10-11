@@ -53,7 +53,6 @@ pub type State = Arc<RwLock<LedgerState>>;
 /// API endpoints:
 /// - /api/v0/status: Emits the data described in `LedgerState`
 /// - /api/v0/racers-ledger-proxy: Websocket endpoint. All data the Lamprey gets from the mod is echoed here.
-
 mod filters {
     use std::convert::Infallible;
 
@@ -476,5 +475,5 @@ pub async fn main() {
         });
     tokio::spawn(server)
         .await
-        .expect("somehow failed spawning the server (oops)");
+        .expect("somehow failed spawning the server (oops)")
 }
