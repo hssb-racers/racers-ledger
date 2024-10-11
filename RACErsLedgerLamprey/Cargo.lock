@@ -865,7 +865,7 @@ dependencies = [
  "tokio-stream",
  "tracing",
  "tracing-subscriber",
- "tungstenite 0.23.0",
+ "tungstenite 0.24.0",
  "url",
  "warp",
 ]
@@ -1256,24 +1256,6 @@ dependencies = [
  "sha1",
  "thiserror",
  "url",
- "utf-8",
-]
-
-[[package]]
-name = "tungstenite"
-version = "0.23.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6e2e2ce1e47ed2994fd43b04c8f618008d4cabdd5ee34027cf14f9d918edd9c8"
-dependencies = [
- "byteorder",
- "bytes",
- "data-encoding",
- "http 1.1.0",
- "httparse",
- "log",
- "rand",
- "sha1",
- "thiserror",
  "utf-8",
 ]
 
