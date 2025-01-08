@@ -10,6 +10,6 @@ repository = "https://git.sariya.dev/sariya/racers-ledger"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-colored = "2.1.0"
+colored = "3.0.0"
 serde = { version = "1.0.209", features = ["derive"] }
 chrono = { version = "0.4.38", features = ["serde"] }
