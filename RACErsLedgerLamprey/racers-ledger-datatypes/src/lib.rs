@@ -86,7 +86,7 @@ impl fmt::Display for SalvageEvent {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             SalvageEvent::WelcomeEvent { msg } => {
-                write!(f, "{}", msg)
+                write!(f, "{msg}")
             }
             SalvageEvent::ShiftSalvageLogEntry {
                 object_name,
@@ -101,8 +101,7 @@ impl fmt::Display for SalvageEvent {
             } => {
                 write!(
                     f,
-                    "{:.2} ({}) {}{}{} worth {} via {} (item categories: [{}])",
-                    game_time,
+                    "{game_time:.2} ({}) {}{}{object_name} worth {value} via {salvaged_by} (item categories: [{}])",
                     system_time.to_rfc3339_opts(SecondsFormat::Secs, true),
                     if *destroyed {
                         "Destroyed ".red().bold()
@@ -110,13 +109,10 @@ impl fmt::Display for SalvageEvent {
                         "Salvaged ".green().bold()
                     },
                     if *mass_based_value {
-                        format!("{} kg of ", mass)
+                        format!("{mass} kg of ")
                     } else {
                         "".into()
                     },
-                    object_name,
-                    value,
-                    salvaged_by,
                     categories.join(",") // TODO(sariya) have some highlight override colors for these for common RACE categories???
                 )
             }
@@ -127,10 +123,8 @@ impl fmt::Display for SalvageEvent {
             } => {
                 write!(
                     f,
-                    "({}) game state changed from {} to {}",
-                    system_time.to_rfc3339_opts(SecondsFormat::Secs, true),
-                    previous_game_state,
-                    current_game_state
+                    "({}) game state changed from {previous_game_state} to {current_game_state}",
+                    system_time.to_rfc3339_opts(SecondsFormat::Secs, true)
                 )
             }
             SalvageEvent::StartShiftEvent { system_time } => {
@@ -155,7 +149,7 @@ impl fmt::Display for SalvageEvent {
                 max_salvage_mass,
                 system_time,
             } => {
-                write!(f, "({}) current shift is a RACE: seed={} version={} start_date_utc={} max_total_value={} max_salvage_mass={}", system_time.to_rfc3339_opts(SecondsFormat::Secs, true), seed, version, start_date_utc, max_total_value, max_salvage_mass)
+                write!(f, "({}) current shift is a RACE: seed={seed} version={version} start_date_utc={start_date_utc} max_total_value={max_total_value} max_salvage_mass={max_salvage_mass}", system_time.to_rfc3339_opts(SecondsFormat::Secs, true))
             }
             SalvageEvent::TimeTickEvent {
                 current_time,
@@ -164,10 +158,8 @@ impl fmt::Display for SalvageEvent {
             } => {
                 write!(
                     f,
-                    "({}) registered time tick to {}s, shift will end at {}s",
-                    system_time.to_rfc3339_opts(SecondsFormat::Secs, true),
-                    current_time,
-                    max_time
+                    "({}) registered time tick to {current_time}s, shift will end at {max_time}s",
+                    system_time.to_rfc3339_opts(SecondsFormat::Secs, true)
                 )
             }
         }
