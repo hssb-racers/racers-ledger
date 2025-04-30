@@ -364,7 +364,7 @@ pub async fn main() {
             format!("ws://localhost:{}/racers-ledger/", opts_clone.connect_port);
         let (websocketstream, response) = connect_async(connect_destination.as_str())
             .await
-            .unwrap_or_else(|_| panic!("Can't connect to {connect_destination}"));
+            .unwrap_or_else(|_| panic!("Can't connect to {}", connect_destination));
         info!("connected to server");
         info!("response code: {}", response.status());
         let (_, mut websocket_rx) = websocketstream.split();
