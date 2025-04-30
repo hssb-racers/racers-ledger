@@ -142,14 +142,14 @@ mod handlers {
         debug!("new client connected wooooo");
         tokio::task::spawn(rx.forward(user_ws_tx).map(|result| {
             if let Err(e) = result {
-                error!("websocket send error: {}", e);
+                error!("websocket send error: {e}");
             }
         }));
         clients.write().await.insert(my_id, tx);
         while let Some(result) = user_ws_rx.next().await {
             match result {
                 Err(e) => {
-                    error!("websocket error (uid={}): {}", my_id, e);
+                    error!("websocket error (uid={my_id}): {e}");
                     break;
                 }
                 _ => {
@@ -164,7 +164,7 @@ mod handlers {
     /// Internal helper function for its `connected` counterpart.
     #[tracing::instrument]
     async fn handle_websocket_ledger_proxy_disconnected(my_id: usize, clients: &Clients) {
-        info!("disconnecting websocket user {}", my_id);
+        info!("disconnecting websocket user {my_id}");
         clients.write().await.remove(&my_id);
     }
 
@@ -199,12 +199,9 @@ mod sinks {
             match recv_result {
                 Ok(salvage_event) => {
                     for (client_id, tx) in clients.read().await.iter() {
-                        debug!("attempted to send data to client {}", client_id);
+                        debug!("attempted to send data to client {client_id}");
                         let json = serde_json::to_string(&salvage_event).unwrap_or_else(|_| {
-                            error!(
-                                "somehow failed to serialize salvage event to string: {:#?}",
-                                salvage_event
-                            );
+                            error!("somehow failed to serialize salvage event to string: {salvage_event:#?}");
                             json!({
                                 "type": "error",
                                 "message": "could not serialize salvage event :("
@@ -217,10 +214,7 @@ mod sinks {
                     }
                 }
                 Err(RecvError::Lagged(lagged_messages)) => {
-                    error!(
-                        "websocket client updater sink missed {} messages :(",
-                        lagged_messages
-                    )
+                    error!("websocket client updater sink missed {lagged_messages} messages :(")
                 }
                 Err(RecvError::Closed) => {
                     error!("somehow the websocket client updater sink got a RecvError::Closed, this is a problem if it happened when not shutting down the game, bug sariya about it");
@@ -240,18 +234,18 @@ mod sinks {
             match recv_result {
                 Ok(salvage_event) => match salvage_event {
                     SalvageEvent::TimeTickEvent { .. } => {
-                        trace!("received {:#?}", salvage_event);
+                        trace!("received {salvage_event:#?}");
                         if log_time_tick {
-                            println!("{}", salvage_event)
+                            println!("{salvage_event}")
                         }
                     }
                     salvage_event => {
-                        trace!("received {:#?}", salvage_event);
-                        println!("{}", salvage_event)
+                        trace!("received {salvage_event:#?}");
+                        println!("{salvage_event}")
                     }
                 },
                 Err(RecvError::Lagged(lagged_messages)) => {
-                    error!("console sink missed {} messages :(", lagged_messages)
+                    error!("console sink missed {lagged_messages} messages :(")
                 }
                 Err(RecvError::Closed) => {
                     error!("somehow the console sink got a RecvError::Closed, this is a problem if it happened when not shutting down the game, bug sariya about it");
@@ -285,7 +279,7 @@ mod sinks {
                     _ => {}
                 },
                 Err(RecvError::Lagged(lagged_messages)) => {
-                    error!("status updater sink missed {} messages :(", lagged_messages)
+                    error!("status updater sink missed {lagged_messages} messages :(")
                 }
                 Err(RecvError::Closed) => {
                     error!("somehow the status updater sink got a RecvError::Closed, this is a problem if it happened when not shutting down the game, bug sariya about it");
@@ -370,7 +364,7 @@ pub async fn main() {
             format!("ws://localhost:{}/racers-ledger/", opts_clone.connect_port);
         let (websocketstream, response) = connect_async(connect_destination.as_str())
             .await
-            .unwrap_or_else(|_| panic!("Can't connect to {}", connect_destination));
+            .unwrap_or_else(|_| panic!("Can't connect to {connect_destination}"));
         info!("connected to server");
         info!("response code: {}", response.status());
         let (_, mut websocket_rx) = websocketstream.split();
@@ -383,7 +377,7 @@ pub async fn main() {
                 .unwrap()
                 .expect("ran into an error with the message somehow i guess");
 
-            trace!("received message {}", msg);
+            trace!("received message {msg}");
             match msg {
                 Message::Text(string) => {
                     trace!("trying to convert msg to object...");
@@ -396,13 +390,13 @@ pub async fn main() {
                     }
                 }
                 Message::Ping(data) => {
-                    trace!("received ping! (data: {:?})", data);
+                    trace!("received ping! (data: {data:?})");
                 }
                 Message::Pong(data) => {
-                    trace!("received pong! (data: {:?}", data);
+                    trace!("received pong! (data: {data:?}");
                 }
                 Message::Binary(data) => {
-                    trace!("received binary data: {:?}", data)
+                    trace!("received binary data: {data:?}")
                 }
                 Message::Close(close_frame) => {
                     trace!("received close!");
@@ -412,7 +406,7 @@ pub async fn main() {
                     let reason = "game closed! (probably)";
                     if let Some(close_frame) = close_frame {
                         // TODO(sariya) pass down the code/reason to consumers?
-                        trace!("close frame info: {:#?}", close_frame);
+                        trace!("close frame info: {close_frame:#?}");
                     }
 
                     // server died, let's clean up and tell our clients and die too
@@ -432,10 +426,7 @@ pub async fn main() {
                     break;
                 }
                 Message::Frame(data) => {
-                    trace!(
-                        "I have no idea what happened now -- klaernie. Got data: {:?}",
-                        data
-                    )
+                    trace!("I have no idea what happened now -- klaernie. Got data: {data:?}")
                 }
             }
         }
