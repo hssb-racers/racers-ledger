@@ -198,12 +198,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: plugin
           path: artifacts/plugin
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: racers_ledger_lamprey-linux
           path: artifacts/linux
@@ -211,7 +211,7 @@ jobs:
       - name: make linux binary executable
         run: chmod +x artifacts/linux/racers-ledger-lamprey
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: racers_ledger_lamprey-windows
           path: artifacts/windows
