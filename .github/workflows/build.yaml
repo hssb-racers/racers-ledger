@@ -38,7 +38,7 @@ jobs:
       run: msbuild
 
     - name: Push DLL to workflow artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: plugin
         path: |
@@ -75,7 +75,7 @@ jobs:
           args: --manifest-path RACErsLedgerLamprey/Cargo.toml --release
 
       - name: extract built binary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: racers_ledger_lamprey-linux
           path: RACErsLedgerLamprey/target/release/racers-ledger-lamprey
@@ -112,7 +112,7 @@ jobs:
           args: --manifest-path RACErsLedgerLamprey/Cargo.toml --target x86_64-pc-windows-msvc --release
 
       - name: extract built binary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: racers_ledger_lamprey-windows
           path: RACErsLedgerLamprey/target/x86_64-pc-windows-msvc/release/racers-ledger-lamprey.exe
@@ -198,12 +198,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v6
         with:
           name: plugin
           path: artifacts/plugin
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v6
         with:
           name: racers_ledger_lamprey-linux
           path: artifacts/linux
@@ -211,7 +211,7 @@ jobs:
       - name: make linux binary executable
         run: chmod +x artifacts/linux/racers-ledger-lamprey
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v6
         with:
           name: racers_ledger_lamprey-windows
           path: artifacts/windows
@@ -245,7 +245,7 @@ jobs:
         run: ls -Rl RACErsLedger *.zip *.tar.gz
 
       - name: extract .zip/.tar as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ReleaseZipballs
           path: |
