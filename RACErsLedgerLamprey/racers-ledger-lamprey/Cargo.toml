@@ -19,7 +19,7 @@ tungstenite = "0.28.0"
 async-tungstenite = { version = "0.32.0", features = ["tokio-runtime"] }
 url = "2.5.2"
 futures = "0.3.30"
-warp = { version = "0.4.0", features = ["websocket"] }
+warp = { version = "0.4.0", features = ["websocket", "server"] }
 tokio-stream = { version = "0.1.15", features = ["net"] }
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["ansi", "fmt"] }
