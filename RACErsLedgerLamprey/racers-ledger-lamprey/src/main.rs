@@ -412,7 +412,7 @@ pub async fn main() {
                     // server died, let's clean up and tell our clients and die too
                     // TODO(sariya) this should probably be in the updater sink, but it
                     // unfortunately needs info to data (the message::close frame)
-                    for (_, tx) in clients_clone.read().await.iter() {
+                    for tx in clients_clone.read().await.values() {
                         if let Err(_disconnected) =
                             tx.send(Ok(warp::ws::Message::close_with(code, reason)))
                         {
